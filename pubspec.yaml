@@ -1,0 +1,42 @@
+name: ora
+description: "Ora — Premium Food Ordering Platform"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+
+  # Supabase
+  supabase_flutter: ^2.9.0
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Routing
+  go_router: ^15.1.2
+
+  # UI
+  google_fonts: ^6.2.1
+  cached_network_image: ^3.4.1
+  flutter_animate: ^4.5.2
+  shimmer: ^3.0.0
+
+  # Utilities
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  image_picker: ^1.2.2
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
