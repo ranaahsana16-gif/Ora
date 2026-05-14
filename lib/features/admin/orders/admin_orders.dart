@@ -59,7 +59,7 @@ class _AdminOrdersState extends State<AdminOrders> {
     try {
       var query = _supabase
           .from('orders')
-          .select('*, order_items(*), profiles(full_name)');
+          .select('*, order_items(*), profiles!orders_user_id_fkey(full_name)');
 
       if (_statusFilter != null) {
         query = query.eq('status', _statusFilter!);
