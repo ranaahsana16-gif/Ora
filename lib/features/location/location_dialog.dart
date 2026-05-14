@@ -133,7 +133,8 @@ class _LocationDialogState extends ConsumerState<LocationDialog> {
       areaId: _selectedAreaId,
       areaName: _selectedAreaName,
       deliveryFee: (selectedArea?['delivery_fee'] as num?)?.toDouble(),
-      estimatedDeliveryTime: selectedArea?['estimated_delivery_time'] as String?,
+      estimatedDeliveryTime:
+          selectedArea?['estimated_delivery_time'] as String?,
       outletId: _selectedOutletId,
       outletName: _selectedOutletName,
     );

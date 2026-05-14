@@ -47,7 +47,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!mounted) return;
 
       // Check for a redirect destination (e.g. from checkout flow)
-      final redirectTo = GoRouterState.of(context).uri.queryParameters['redirect'];
+      final redirectTo = GoRouterState.of(
+        context,
+      ).uri.queryParameters['redirect'];
 
       if (profile?.isAdmin ?? false) {
         context.go('/admin');
@@ -100,7 +102,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               gradient: OraTheme.primaryGradient,
                               boxShadow: [
                                 BoxShadow(
-                                  color: OraTheme.primaryOrange.withValues(alpha: 0.3),
+                                  color: OraTheme.primaryOrange.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   blurRadius: 30,
                                   spreadRadius: 2,
                                 ),
@@ -145,10 +149,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             obscureText: !_showPassword,
                             prefixIcon: Icons.lock_outline,
                             suffix: GestureDetector(
-                              onTap: () =>
-                                  setState(() => _showPassword = !_showPassword),
+                              onTap: () => setState(
+                                () => _showPassword = !_showPassword,
+                              ),
                               child: Icon(
-                                _showPassword ? Icons.visibility_off : Icons.visibility,
+                                _showPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 size: 20,
                                 color: OraTheme.textMuted,
                               ),
@@ -179,10 +186,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  final redirectTo = GoRouterState.of(context).uri.queryParameters['redirect'];
+                                  final redirectTo = GoRouterState.of(
+                                    context,
+                                  ).uri.queryParameters['redirect'];
                                   var path = '/signup';
                                   if (redirectTo != null) {
-                                    path += '?redirect=${Uri.encodeComponent(redirectTo)}';
+                                    path +=
+                                        '?redirect=${Uri.encodeComponent(redirectTo)}';
                                   }
                                   context.go(path);
                                 },
@@ -220,7 +230,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),

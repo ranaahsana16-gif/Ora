@@ -18,7 +18,8 @@ class AddressListScreen extends ConsumerWidget {
         title: const Text('Saved Addresses'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/profile'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/profile'),
         ),
         actions: [
           IconButton(
@@ -34,7 +35,11 @@ class AddressListScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.location_on_outlined, size: 64, color: OraTheme.textMuted),
+                  Icon(
+                    Icons.location_on_outlined,
+                    size: 64,
+                    color: OraTheme.textMuted,
+                  ),
                   const SizedBox(height: 16),
                   const Text('No addresses saved yet'),
                   const SizedBox(height: 24),
@@ -56,7 +61,8 @@ class AddressListScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        loading: () =>
+            const Center(child: CircularProgressIndicator(strokeWidth: 2)),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
@@ -133,7 +139,10 @@ class _AddressTile extends ConsumerWidget {
           },
           itemBuilder: (context) => [
             const PopupMenuItem(value: 'edit', child: Text('Edit')),
-            const PopupMenuItem(value: 'default', child: Text('Set as Default')),
+            const PopupMenuItem(
+              value: 'default',
+              child: Text('Set as Default'),
+            ),
             const PopupMenuItem(
               value: 'delete',
               child: Text('Delete', style: TextStyle(color: OraTheme.error)),

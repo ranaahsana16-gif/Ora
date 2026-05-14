@@ -76,10 +76,13 @@ class WishlistScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: OraTheme.primaryOrange,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 14,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: const Text(
                   'Sign In',
@@ -151,8 +154,10 @@ class WishlistScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Text(
                     'Tap the heart ♡ on any item to save it here.',
-                    style:
-                        TextStyle(color: OraTheme.textSecondary, fontSize: 14),
+                    style: TextStyle(
+                      color: OraTheme.textSecondary,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton.icon(
@@ -163,9 +168,12 @@ class WishlistScreen extends ConsumerWidget {
                       backgroundColor: OraTheme.primaryOrange,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 28, vertical: 14),
+                        horizontal: 28,
+                        vertical: 14,
+                      ),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ],
@@ -189,8 +197,10 @@ class WishlistScreen extends ConsumerWidget {
                       if (!isMobile) ...[
                         GestureDetector(
                           onTap: () => context.go('/'),
-                          child: const Icon(Icons.arrow_back,
-                              color: OraTheme.textPrimary),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: OraTheme.textPrimary,
+                          ),
                         ),
                         const SizedBox(width: 16),
                       ],
@@ -218,13 +228,17 @@ class WishlistScreen extends ConsumerWidget {
                       // Clear all button
                       TextButton.icon(
                         onPressed: () => _confirmClearAll(context, ref),
-                        icon: const Icon(Icons.delete_outline,
-                            size: 18, color: Colors.redAccent),
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          size: 18,
+                          color: Colors.redAccent,
+                        ),
                         label: const Text(
                           'Clear All',
                           style: TextStyle(
-                              color: Colors.redAccent,
-                              fontWeight: FontWeight.w600),
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -247,16 +261,13 @@ class WishlistScreen extends ConsumerWidget {
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final product = items[index];
-                      return _WishlistCard(product: product)
-                          .animate(delay: (index * 60).ms)
-                          .fadeIn(duration: 350.ms)
-                          .slideY(begin: 0.1, end: 0);
-                    },
-                    childCount: items.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final product = items[index];
+                    return _WishlistCard(product: product)
+                        .animate(delay: (index * 60).ms)
+                        .fadeIn(duration: 350.ms)
+                        .slideY(begin: 0.1, end: 0);
+                  }, childCount: items.length),
                 ),
               ),
 
@@ -280,8 +291,10 @@ class WishlistScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child:
-                const Text('Cancel', style: TextStyle(color: Colors.black54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.black54),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -297,10 +310,13 @@ class WishlistScreen extends ConsumerWidget {
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Clear All',
-                style: TextStyle(fontWeight: FontWeight.w700)),
+            child: const Text(
+              'Clear All',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -322,14 +338,7 @@ class _WishlistCard extends ConsumerWidget {
         if (!isMobile) {
           showDialog(
             context: context,
-            builder: (_) => Dialog(
-              backgroundColor: Colors.transparent,
-              child: ConstrainedBox(
-                constraints:
-                    const BoxConstraints(maxWidth: 480, maxHeight: 640),
-                child: ProductPopup(product: product),
-              ),
-            ),
+            builder: (_) => ProductPopup(product: product),
           );
         } else {
           showModalBottomSheet(
@@ -367,8 +376,9 @@ class _WishlistCard extends ConsumerWidget {
               child: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
                     child: product.imageUrl != null
                         ? CachedNetworkImage(
                             imageUrl: product.imageUrl!,
@@ -379,23 +389,32 @@ class _WishlistCard extends ConsumerWidget {
                             placeholder: (_, _) => Container(
                               color: const Color(0xFFE5C029),
                               child: const Center(
-                                child: Icon(Icons.fastfood_outlined,
-                                    color: Colors.black12, size: 36),
+                                child: Icon(
+                                  Icons.fastfood_outlined,
+                                  color: Colors.black12,
+                                  size: 36,
+                                ),
                               ),
                             ),
                             errorWidget: (_, _, _) => Container(
                               color: const Color(0xFFE5C029),
                               child: const Center(
-                                child: Icon(Icons.fastfood_outlined,
-                                    color: Colors.black12, size: 36),
+                                child: Icon(
+                                  Icons.fastfood_outlined,
+                                  color: Colors.black12,
+                                  size: 36,
+                                ),
                               ),
                             ),
                           )
                         : Container(
                             color: const Color(0xFFE5C029),
                             child: const Center(
-                              child: Icon(Icons.fastfood_outlined,
-                                  color: Colors.black12, size: 40),
+                              child: Icon(
+                                Icons.fastfood_outlined,
+                                color: Colors.black12,
+                                size: 40,
+                              ),
                             ),
                           ),
                   ),
@@ -416,8 +435,11 @@ class _WishlistCard extends ConsumerWidget {
                           shape: BoxShape.circle,
                           color: OraTheme.primaryOrange.withValues(alpha: 0.9),
                         ),
-                        child: const Icon(Icons.favorite,
-                            color: Colors.white, size: 16),
+                        child: const Icon(
+                          Icons.favorite,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                       ),
                     ),
                   ),
@@ -428,7 +450,9 @@ class _WishlistCard extends ConsumerWidget {
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFF0000),
                           borderRadius: BorderRadius.circular(4),
@@ -468,7 +492,9 @@ class _WishlistCard extends ConsumerWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black,
                           borderRadius: BorderRadius.circular(6),

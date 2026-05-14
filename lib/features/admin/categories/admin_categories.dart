@@ -47,9 +47,11 @@ class _AdminCategoriesState extends State<AdminCategories> {
     try {
       final nameC = TextEditingController(text: cat?['name'] ?? '');
       int selectedOrder = cat?['sort_order'] ?? (_categories.length + 1);
-      final int maxOrder = _categories.length + 1 > 10 ? _categories.length + 1 : 10;
+      final int maxOrder = _categories.length + 1 > 10
+          ? _categories.length + 1
+          : 10;
       final List<int> orderOptions = List.generate(maxOrder, (i) => i + 1);
-      
+
       String? currentImageUrl = cat?['image_url'];
       bool isUploading = false;
       bool isActive = cat?['is_active'] ?? true;
@@ -58,8 +60,14 @@ class _AdminCategoriesState extends State<AdminCategories> {
         context: context,
         builder: (dlgCtx) => StatefulBuilder(
           builder: (stfCtx, setState) {
-            final conflict = (selectedOrder != cat?['sort_order']) 
-                ? _categories.where((c) => c['sort_order'] == selectedOrder && c['id'] != cat?['id']).firstOrNull 
+            final conflict = (selectedOrder != cat?['sort_order'])
+                ? _categories
+                      .where(
+                        (c) =>
+                            c['sort_order'] == selectedOrder &&
+                            c['id'] != cat?['id'],
+                      )
+                      .firstOrNull
                 : null;
 
             return AlertDialog(
@@ -73,8 +81,12 @@ class _AdminCategoriesState extends State<AdminCategories> {
                       OraInput(controller: nameC, label: 'Name'),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<int>(
-                        initialValue: orderOptions.contains(selectedOrder) ? selectedOrder : orderOptions.last,
-                        decoration: const InputDecoration(labelText: 'Sort Order'),
+                        initialValue: orderOptions.contains(selectedOrder)
+                            ? selectedOrder
+                            : orderOptions.last,
+                        decoration: const InputDecoration(
+                          labelText: 'Sort Order',
+                        ),
                         items: orderOptions.map((order) {
                           return DropdownMenuItem<int>(
                             value: order,
@@ -90,12 +102,19 @@ class _AdminCategoriesState extends State<AdminCategories> {
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Row(
                             children: [
-                              const Icon(Icons.warning_amber_rounded, size: 16, color: Colors.orange),
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                size: 16,
+                                color: Colors.orange,
+                              ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   'Already ${conflict['name']} category is shown. It will be swapped.',
-                                  style: const TextStyle(color: Colors.orange, fontSize: 12),
+                                  style: const TextStyle(
+                                    color: Colors.orange,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ],
@@ -103,81 +122,234 @@ class _AdminCategoriesState extends State<AdminCategories> {
                         ),
                       const SizedBox(height: 16),
                       SwitchListTile(
-                        title: const Text('Active Status', style: TextStyle(fontWeight: FontWeight.w500)),
-                        subtitle: Text(isActive ? 'Category is visible to customers' : 'Category is hidden'),
+                        title: const Text(
+                          'Active Status',
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        subtitle: Text(
+                          isActive
+                              ? 'Category is visible to customers'
+                              : 'Category is hidden',
+                        ),
                         value: isActive,
                         onChanged: (val) => setState(() => isActive = val),
                         contentPadding: EdgeInsets.zero,
                         activeThumbColor: Colors.black,
                       ),
                       const SizedBox(height: 16),
-                      if (currentImageUrl != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              currentImageUrl!,
-                              height: 100,
-                              fit: BoxFit.cover,
-                              errorBuilder: (ctx, err, stack) => Container(
-                                height: 100,
-                                color: Colors.grey[200],
-                                child: const Center(
-                                  child: Icon(Icons.broken_image, color: Colors.grey),
-                                ),
-                              ),
-                            ),
+                      // Banner management section
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.grey[50],
+                          border: Border.all(
+                            color: Colors.black.withValues(alpha: 0.06),
                           ),
                         ),
-                      OutlinedButton.icon(
-                        onPressed: isUploading
-                            ? null
-                            : () async {
-                                final picker = ImagePicker();
-                                final image = await picker.pickImage(
-                                  source: ImageSource.gallery,
-                                );
-                                if (image == null) return;
-
-                                setState(() => isUploading = true);
-                                try {
-                                  final bytes = await image.readAsBytes();
-                                  final ext = image.name.split('.').last.isEmpty
-                                      ? 'jpg'
-                                      : image.name.split('.').last;
-                                  final fileName =
-                                      '${DateTime.now().millisecondsSinceEpoch}.$ext';
-                                  await _supabase.storage
-                                      .from('categories')
-                                      .uploadBinary(fileName, bytes);
-                                  final url = _supabase.storage
-                                      .from('categories')
-                                      .getPublicUrl(fileName);
-                                  setState(() => currentImageUrl = url);
-                                } catch (e) {
-                                  if (mounted) {
-                                    context.showOraSnackBar(
-                                      'Upload failed: $e',
-                                      isError: true,
-                                    );
-                                  }
-                                } finally {
-                                  setState(() => isUploading = false);
-                                }
-                              },
-                        icon: isUploading
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.image),
-                        label: Text(
-                          isUploading ? 'Uploading...' : 'Upload Banner (985x190)',
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(48),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Category Banner',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Recommended size: 985×190',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            if (currentImageUrl != null) ...[
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  currentImageUrl!,
+                                  height: 100,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (ctx, err, stack) => Container(
+                                    height: 100,
+                                    color: Colors.grey[200],
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: isUploading
+                                          ? null
+                                          : () async {
+                                              final picker = ImagePicker();
+                                              final image = await picker
+                                                  .pickImage(
+                                                    source: ImageSource.gallery,
+                                                  );
+                                              if (image == null) return;
+                                              setState(
+                                                () => isUploading = true,
+                                              );
+                                              try {
+                                                final bytes = await image
+                                                    .readAsBytes();
+                                                final ext =
+                                                    image.name
+                                                        .split('.')
+                                                        .last
+                                                        .isEmpty
+                                                    ? 'jpg'
+                                                    : image.name
+                                                          .split('.')
+                                                          .last;
+                                                final fileName =
+                                                    '${DateTime.now().millisecondsSinceEpoch}.$ext';
+                                                await _supabase.storage
+                                                    .from('categories')
+                                                    .uploadBinary(
+                                                      fileName,
+                                                      bytes,
+                                                    );
+                                                final url = _supabase.storage
+                                                    .from('categories')
+                                                    .getPublicUrl(fileName);
+                                                setState(
+                                                  () => currentImageUrl = url,
+                                                );
+                                              } catch (e) {
+                                                if (mounted) {
+                                                  context.showOraSnackBar(
+                                                    'Upload failed: $e',
+                                                    isError: true,
+                                                  );
+                                                }
+                                              } finally {
+                                                setState(
+                                                  () => isUploading = false,
+                                                );
+                                              }
+                                            },
+                                      icon: isUploading
+                                          ? const SizedBox(
+                                              width: 14,
+                                              height: 14,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.swap_horiz,
+                                              size: 16,
+                                            ),
+                                      label: Text(
+                                        isUploading
+                                            ? 'Uploading...'
+                                            : 'Replace',
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: isUploading
+                                          ? null
+                                          : () => setState(
+                                              () => currentImageUrl = null,
+                                            ),
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        size: 16,
+                                        color: OraTheme.error,
+                                      ),
+                                      label: const Text(
+                                        'Remove',
+                                        style: TextStyle(color: OraTheme.error),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                        ),
+                                        side: const BorderSide(
+                                          color: OraTheme.error,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ] else
+                              OutlinedButton.icon(
+                                onPressed: isUploading
+                                    ? null
+                                    : () async {
+                                        final picker = ImagePicker();
+                                        final image = await picker.pickImage(
+                                          source: ImageSource.gallery,
+                                        );
+                                        if (image == null) return;
+                                        setState(() => isUploading = true);
+                                        try {
+                                          final bytes = await image
+                                              .readAsBytes();
+                                          final ext =
+                                              image.name.split('.').last.isEmpty
+                                              ? 'jpg'
+                                              : image.name.split('.').last;
+                                          final fileName =
+                                              '${DateTime.now().millisecondsSinceEpoch}.$ext';
+                                          await _supabase.storage
+                                              .from('categories')
+                                              .uploadBinary(fileName, bytes);
+                                          final url = _supabase.storage
+                                              .from('categories')
+                                              .getPublicUrl(fileName);
+                                          setState(() => currentImageUrl = url);
+                                        } catch (e) {
+                                          if (mounted) {
+                                            context.showOraSnackBar(
+                                              'Upload failed: $e',
+                                              isError: true,
+                                            );
+                                          }
+                                        } finally {
+                                          setState(() => isUploading = false);
+                                        }
+                                      },
+                                icon: isUploading
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.add_photo_alternate),
+                                label: Text(
+                                  isUploading ? 'Uploading...' : 'Add Banner',
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(44),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
@@ -189,52 +361,57 @@ class _AdminCategoriesState extends State<AdminCategories> {
                   onPressed: () => Navigator.pop(dlgCtx),
                   child: const Text('Cancel'),
                 ),
-              ElevatedButton(
-                onPressed: isUploading
-                    ? null
-                    : () async {
-                        final messenger = ScaffoldMessenger.of(context);
-                        try {
-                          final newOrder = selectedOrder;
-                          final data = {
-                            'name': nameC.text.trim(),
-                            'sort_order': newOrder,
-                            'image_url': currentImageUrl,
-                            'is_active': isActive,
-                          };
+                ElevatedButton(
+                  onPressed: isUploading
+                      ? null
+                      : () async {
+                          final messenger = ScaffoldMessenger.of(context);
+                          try {
+                            final newOrder = selectedOrder;
+                            final data = {
+                              'name': nameC.text.trim(),
+                              'sort_order': newOrder,
+                              'image_url': currentImageUrl,
+                              'is_active': isActive,
+                            };
 
-                          if (conflict != null) {
-                            final originalOrder = cat?['sort_order'] ?? (_categories.length + 1);
-                            await _supabase.from('categories').update({'sort_order': originalOrder}).eq('id', conflict['id']);
-                          }
+                            if (conflict != null) {
+                              final originalOrder =
+                                  cat?['sort_order'] ??
+                                  (_categories.length + 1);
+                              await _supabase
+                                  .from('categories')
+                                  .update({'sort_order': originalOrder})
+                                  .eq('id', conflict['id']);
+                            }
 
-                          if (cat == null) {
-                            await _supabase.from('categories').insert(data);
-                          } else {
-                            await _supabase
-                                .from('categories')
-                                .update(data)
-                                .eq('id', cat['id']);
+                            if (cat == null) {
+                              await _supabase.from('categories').insert(data);
+                            } else {
+                              await _supabase
+                                  .from('categories')
+                                  .update(data)
+                                  .eq('id', cat['id']);
+                            }
+                            if (mounted && dlgCtx.mounted) {
+                              Navigator.of(dlgCtx).pop();
+                              _load();
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              messenger.showSnackBar(
+                                SnackBar(content: Text('Operation failed: $e')),
+                              );
+                            }
                           }
-                          if (mounted && dlgCtx.mounted) {
-                            Navigator.of(dlgCtx).pop();
-                            _load();
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            messenger.showSnackBar(
-                              SnackBar(content: Text('Operation failed: $e')),
-                            );
-                          }
-                        }
-                      },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
+                        },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        ),
+      );
     } catch (e) {
       if (mounted) {
         context.showOraSnackBar('Error showing form: $e', isError: true);
@@ -337,9 +514,7 @@ class _AdminCategoriesState extends State<AdminCategories> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            cat['is_active'] == true
-                                ? 'Active'
-                                : 'Inactive',
+                            cat['is_active'] == true ? 'Active' : 'Inactive',
                             style: TextStyle(
                               color: cat['is_active'] == true
                                   ? Colors.black

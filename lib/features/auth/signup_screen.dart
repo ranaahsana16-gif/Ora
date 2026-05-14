@@ -34,10 +34,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _loading = true);
     try {
-      final redirectTo = GoRouterState.of(context).uri.queryParameters['redirect'];
+      final redirectTo = GoRouterState.of(
+        context,
+      ).uri.queryParameters['redirect'];
       final needsVerification = await AuthService.signUp(
         email: _emailC.text.trim(),
         password: _passwordC.text,
@@ -119,7 +121,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           gradient: OraTheme.primaryGradient,
                           boxShadow: [
                             BoxShadow(
-                              color: OraTheme.primaryOrange.withValues(alpha: 0.3),
+                              color: OraTheme.primaryOrange.withValues(
+                                alpha: 0.3,
+                              ),
                               blurRadius: 30,
                               spreadRadius: 2,
                             ),
@@ -186,7 +190,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           onTap: () =>
                               setState(() => _showPassword = !_showPassword),
                           child: Icon(
-                            _showPassword ? Icons.visibility_off : Icons.visibility,
+                            _showPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             size: 20,
                             color: OraTheme.textMuted,
                           ),
@@ -217,10 +223,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           ),
                           GestureDetector(
                             onTap: () {
-                              final redirectTo = GoRouterState.of(context).uri.queryParameters['redirect'];
+                              final redirectTo = GoRouterState.of(
+                                context,
+                              ).uri.queryParameters['redirect'];
                               var path = '/login';
                               if (redirectTo != null) {
-                                path += '?redirect=${Uri.encodeComponent(redirectTo)}';
+                                path +=
+                                    '?redirect=${Uri.encodeComponent(redirectTo)}';
                               }
                               context.go(path);
                             },

@@ -16,7 +16,7 @@ class _AdminSettingsState extends State<AdminSettings> {
   final _taxC = TextEditingController();
   final _discountC = TextEditingController();
   final _deliveryFeeC = TextEditingController();
-  
+
   bool _loading = true;
   bool _saving = false;
 
@@ -24,6 +24,14 @@ class _AdminSettingsState extends State<AdminSettings> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _taxC.dispose();
+    _discountC.dispose();
+    _deliveryFeeC.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -56,7 +64,9 @@ class _AdminSettingsState extends State<AdminSettings> {
 
       if (mounted) context.showOraSnackBar('Settings saved successfully');
     } catch (e) {
-      if (mounted) context.showOraSnackBar('Failed to save settings: $e', isError: true);
+      if (mounted) {
+        context.showOraSnackBar('Failed to save settings: $e', isError: true);
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -74,7 +84,9 @@ class _AdminSettingsState extends State<AdminSettings> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.06))),
+            border: Border(
+              bottom: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+            ),
           ),
           child: Row(
             children: [
@@ -86,13 +98,24 @@ class _AdminSettingsState extends State<AdminSettings> {
               ),
               if (_saving)
                 const SizedBox(
-                  width: 20, height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.black,
+                  ),
                 )
               else
                 TextButton(
                   onPressed: _save,
-                  child: const Text('Save', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                  child: const Text(
+                    'Save',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -126,6 +149,8 @@ class _AdminSettingsState extends State<AdminSettings> {
                 keyboardType: TextInputType.number,
                 prefixIcon: Icons.delivery_dining,
               ),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),

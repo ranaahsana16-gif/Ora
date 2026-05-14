@@ -189,9 +189,7 @@ class _NavItem extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    color: active
-                        ? Colors.black
-                        : OraTheme.textSecondary,
+                    color: active ? Colors.black : OraTheme.textSecondary,
                     fontWeight: active ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),

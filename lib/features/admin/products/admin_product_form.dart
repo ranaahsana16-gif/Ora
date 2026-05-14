@@ -50,7 +50,10 @@ class _AdminProductFormState extends State<AdminProductForm> {
 
   Future<void> _loadData() async {
     try {
-      final cats = await _supabase.from('categories').select().order('sort_order');
+      final cats = await _supabase
+          .from('categories')
+          .select()
+          .order('sort_order');
       if (widget.initialProduct != null) {
         final p = widget.initialProduct!;
         _nameC.text = p['name'] ?? '';
@@ -75,8 +78,13 @@ class _AdminProductFormState extends State<AdminProductForm> {
           setState(() {
             _groups = [];
             for (var g in groupsData) {
-              final opts = List<Map<String, dynamic>>.from(g['product_options'] as List);
-              opts.sort((a, b) => (a['sort_order'] as int).compareTo(b['sort_order'] as int));
+              final opts = List<Map<String, dynamic>>.from(
+                g['product_options'] as List,
+              );
+              opts.sort(
+                (a, b) =>
+                    (a['sort_order'] as int).compareTo(b['sort_order'] as int),
+              );
               _groups.add({
                 'id': g['id'],
                 'name': g['name'],
@@ -101,7 +109,10 @@ class _AdminProductFormState extends State<AdminProductForm> {
       }
     } catch (e) {
       if (mounted) {
-        context.showOraSnackBar('Failed to load product data: $e', isError: true);
+        context.showOraSnackBar(
+          'Failed to load product data: $e',
+          isError: true,
+        );
         setState(() => _isLoading = false);
       }
     }
@@ -115,7 +126,9 @@ class _AdminProductFormState extends State<AdminProductForm> {
     setState(() => _isLoading = true);
     try {
       final bytes = await image.readAsBytes();
-      final ext = image.name.split('.').last.isEmpty ? 'jpg' : image.name.split('.').last;
+      final ext = image.name.split('.').last.isEmpty
+          ? 'jpg'
+          : image.name.split('.').last;
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.$ext';
       await _supabase.storage.from('products').uploadBinary(fileName, bytes);
       final url = _supabase.storage.from('products').getPublicUrl(fileName);
@@ -148,8 +161,13 @@ class _AdminProductFormState extends State<AdminProductForm> {
   }
 
   Future<void> _save() async {
-    if (_nameC.text.trim().isEmpty || _priceC.text.trim().isEmpty || _categoryId == null) {
-      context.showOraSnackBar('Name, price, and primary category are required', isError: true);
+    if (_nameC.text.trim().isEmpty ||
+        _priceC.text.trim().isEmpty ||
+        _categoryId == null) {
+      context.showOraSnackBar(
+        'Name, price, and primary category are required',
+        isError: true,
+      );
       return;
     }
 
@@ -159,7 +177,9 @@ class _AdminProductFormState extends State<AdminProductForm> {
         'name': _nameC.text.trim(),
         'description': _descC.text.trim(),
         'price': double.tryParse(_priceC.text) ?? 0,
-        'discounted_price': _discountC.text.isEmpty ? null : double.tryParse(_discountC.text),
+        'discounted_price': _discountC.text.isEmpty
+            ? null
+            : double.tryParse(_discountC.text),
         'category_id': _categoryId,
         'category_id_2': _categoryId2,
         'image_url': _imageUrl,
@@ -168,36 +188,53 @@ class _AdminProductFormState extends State<AdminProductForm> {
 
       String productId;
       if (widget.initialProduct == null) {
-        final res = await _supabase.from('products').insert(pData).select('id').single();
+        final res = await _supabase
+            .from('products')
+            .insert(pData)
+            .select('id')
+            .single();
         productId = res['id'] as String;
       } else {
         productId = widget.initialProduct!['id'] as String;
         await _supabase.from('products').update(pData).eq('id', productId);
         // Cascade delete will handle options
-        await _supabase.from('product_option_groups').delete().eq('product_id', productId);
+        await _supabase
+            .from('product_option_groups')
+            .delete()
+            .eq('product_id', productId);
       }
 
       // Save groups and their options
       for (int i = 0; i < _groups.length; i++) {
         final g = _groups[i];
-        final gRes = await _supabase.from('product_option_groups').insert({
-          'product_id': productId,
-          'name': g['name'],
-          'is_mandatory': g['is_mandatory'],
-          'allow_multiple': g['allow_multiple'],
-          'sort_order': i,
-        }).select('id').single();
+        final gRes = await _supabase
+            .from('product_option_groups')
+            .insert({
+              'product_id': productId,
+              'name': g['name'],
+              'is_mandatory': g['is_mandatory'],
+              'allow_multiple': g['allow_multiple'],
+              'sort_order': i,
+            })
+            .select('id')
+            .single();
 
         final gId = gRes['id'] as String;
         final opts = g['options'] as List;
         if (opts.isNotEmpty) {
-          final optsData = opts.asMap().entries.map((e) => ({
-            'product_id': productId,
-            'group_id': gId,
-            'name': e.value['name'],
-            'price': e.value['price'],
-            'sort_order': e.key,
-          })).toList();
+          final optsData = opts
+              .asMap()
+              .entries
+              .map(
+                (e) => ({
+                  'product_id': productId,
+                  'group_id': gId,
+                  'name': e.value['name'],
+                  'price': e.value['price'],
+                  'sort_order': e.key,
+                }),
+              )
+              .toList();
           await _supabase.from('product_options').insert(optsData);
         }
       }
@@ -229,7 +266,9 @@ class _AdminProductFormState extends State<AdminProductForm> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: OraTheme.surfaceWhite,
-            border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.06))),
+            border: Border(
+              bottom: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+            ),
           ),
           child: Row(
             children: [
@@ -240,22 +279,38 @@ class _AdminProductFormState extends State<AdminProductForm> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  widget.initialProduct == null ? 'Create Product' : 'Edit Product',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                  widget.initialProduct == null
+                      ? 'Create Product'
+                      : 'Edit Product',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               if (_isSaving)
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: SizedBox(
-                    width: 20, height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.black,
+                    ),
                   ),
                 )
               else
                 TextButton(
                   onPressed: _save,
-                  child: const Text('Save', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                  child: const Text(
+                    'Save',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -263,88 +318,139 @@ class _AdminProductFormState extends State<AdminProductForm> {
         // Body
         Expanded(
           child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text('Basic Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          Center(
-            child: GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                width: 120, height: 120,
-                decoration: BoxDecoration(
-                  color: OraTheme.cardElevated,
-                  borderRadius: BorderRadius.circular(16),
-                  image: _imageUrl != null
-                      ? DecorationImage(image: NetworkImage(_imageUrl!), fit: BoxFit.cover)
-                      : null,
-                ),
-                child: _imageUrl == null
-                    ? const Icon(Icons.add_a_photo, size: 32, color: OraTheme.textMuted)
-                    : null,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          OraInput(controller: _nameC, label: 'Product Name'),
-          const SizedBox(height: 16),
-          OraInput(controller: _descC, label: 'Description', maxLines: 3),
-          const SizedBox(height: 16),
-          Row(
+            padding: const EdgeInsets.all(16),
             children: [
-              Expanded(child: OraInput(controller: _priceC, label: 'Base Price', keyboardType: TextInputType.number)),
-              const SizedBox(width: 16),
-              Expanded(child: OraInput(controller: _discountC, label: 'Sale Price (Optional)', keyboardType: TextInputType.number)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: _categoryId,
-                  decoration: const InputDecoration(labelText: 'Primary Category'),
-                  items: _categories.map((c) => DropdownMenuItem(value: c['id'] as String, child: Text(c['name'] as String))).toList(),
-                  onChanged: (v) => setState(() => _categoryId = v),
+              const Text(
+                'Basic Information',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: OraTheme.cardElevated,
+                      borderRadius: BorderRadius.circular(16),
+                      image: _imageUrl != null
+                          ? DecorationImage(
+                              image: NetworkImage(_imageUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: _imageUrl == null
+                        ? const Icon(
+                            Icons.add_a_photo,
+                            size: 32,
+                            color: OraTheme.textMuted,
+                          )
+                        : null,
+                  ),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: _categoryId2,
-                  decoration: const InputDecoration(labelText: 'Secondary Category (Optional)'),
-                  items: [
-                    const DropdownMenuItem<String>(value: null, child: Text('None')),
-                    ..._categories.map((c) => DropdownMenuItem(value: c['id'] as String, child: Text(c['name'] as String))),
-                  ],
-                  onChanged: (v) => setState(() => _categoryId2 = v),
-                ),
+              const SizedBox(height: 24),
+              OraInput(controller: _nameC, label: 'Product Name'),
+              const SizedBox(height: 16),
+              OraInput(controller: _descC, label: 'Description', maxLines: 3),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OraInput(
+                      controller: _priceC,
+                      label: 'Base Price',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: OraInput(
+                      controller: _discountC,
+                      label: 'Sale Price (Optional)',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Mark as "New" Product', style: TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: const Text('Shows a "NEW" badge on the product card'),
-            value: _isNew,
-            activeThumbColor: OraTheme.primaryOrange,
-            onChanged: (v) => setState(() => _isNew = v),
-          ),
-          const SizedBox(height: 32),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _categoryId,
+                      decoration: const InputDecoration(
+                        labelText: 'Primary Category',
+                      ),
+                      items: _categories
+                          .map(
+                            (c) => DropdownMenuItem(
+                              value: c['id'] as String,
+                              child: Text(c['name'] as String),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (v) => setState(() => _categoryId = v),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _categoryId2,
+                      decoration: const InputDecoration(
+                        labelText: 'Secondary Category (Optional)',
+                      ),
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: null,
+                          child: Text('None'),
+                        ),
+                        ..._categories.map(
+                          (c) => DropdownMenuItem(
+                            value: c['id'] as String,
+                            child: Text(c['name'] as String),
+                          ),
+                        ),
+                      ],
+                      onChanged: (v) => setState(() => _categoryId2 = v),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  'Mark as "New" Product',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text('Shows a "NEW" badge on the product card'),
+                value: _isNew,
+                activeThumbColor: OraTheme.primaryOrange,
+                onChanged: (v) => setState(() => _isNew = v),
+              ),
+              const SizedBox(height: 32),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Add-on Groups', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              TextButton.icon(onPressed: _addGroup, icon: const Icon(Icons.add), label: const Text('Add Group')),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Add-on Groups',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  TextButton.icon(
+                    onPressed: _addGroup,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Group'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              for (int i = 0; i < _groups.length; i++) _buildGroupCard(i),
             ],
           ),
-          const SizedBox(height: 16),
-          for (int i = 0; i < _groups.length; i++)
-            _buildGroupCard(i),
-        ],
-      ),
         ),
       ],
     );
@@ -370,7 +476,9 @@ class _AdminProductFormState extends State<AdminProductForm> {
               Expanded(
                 child: TextFormField(
                   initialValue: g['name'],
-                  decoration: const InputDecoration(labelText: 'Group Name (e.g. Pizza Size)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Group Name (e.g. Pizza Size)',
+                  ),
                   onChanged: (v) => g['name'] = v,
                 ),
               ),
@@ -386,7 +494,10 @@ class _AdminProductFormState extends State<AdminProductForm> {
               Expanded(
                 child: SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Mandatory Selection', style: TextStyle(fontSize: 14)),
+                  title: const Text(
+                    'Mandatory Selection',
+                    style: TextStyle(fontSize: 14),
+                  ),
                   value: g['is_mandatory'],
                   onChanged: (v) => setState(() => g['is_mandatory'] = v),
                   activeThumbColor: Colors.black,
@@ -396,7 +507,10 @@ class _AdminProductFormState extends State<AdminProductForm> {
               Expanded(
                 child: SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Allow Multiple', style: TextStyle(fontSize: 14)),
+                  title: const Text(
+                    'Allow Multiple',
+                    style: TextStyle(fontSize: 14),
+                  ),
                   value: g['allow_multiple'],
                   onChanged: (v) => setState(() => g['allow_multiple'] = v),
                   activeThumbColor: Colors.black,
@@ -416,7 +530,10 @@ class _AdminProductFormState extends State<AdminProductForm> {
                     flex: 2,
                     child: TextFormField(
                       initialValue: opts[j]['name'],
-                      decoration: const InputDecoration(hintText: 'Option Name (e.g. Medium)', isDense: true),
+                      decoration: const InputDecoration(
+                        hintText: 'Option Name (e.g. Medium)',
+                        isDense: true,
+                      ),
                       onChanged: (v) => opts[j]['name'] = v,
                     ),
                   ),
@@ -424,9 +541,13 @@ class _AdminProductFormState extends State<AdminProductForm> {
                   Expanded(
                     child: TextFormField(
                       initialValue: '${opts[j]['price']}',
-                      decoration: const InputDecoration(hintText: 'Extra Price (+0)', isDense: true),
+                      decoration: const InputDecoration(
+                        hintText: 'Extra Price (+0)',
+                        isDense: true,
+                      ),
                       keyboardType: TextInputType.number,
-                      onChanged: (v) => opts[j]['price'] = double.tryParse(v) ?? 0.0,
+                      onChanged: (v) =>
+                          opts[j]['price'] = double.tryParse(v) ?? 0.0,
                     ),
                   ),
                   IconButton(

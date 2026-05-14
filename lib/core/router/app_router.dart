@@ -90,7 +90,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Customer shell (web header)
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) => OraShell(location: state.uri.path, child: child),
+        builder: (context, state, child) =>
+            OraShell(location: state.uri.path, child: child),
         routes: [
           GoRoute(path: '/', builder: (context, state) => const MenuScreen()),
           GoRoute(
@@ -124,7 +125,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/profile/addresses/edit',
-            builder: (context, state) => AddressFormScreen(address: state.extra as UserAddress?),
+            builder: (context, state) =>
+                AddressFormScreen(address: state.extra as UserAddress?),
           ),
           GoRoute(
             path: '/profile/edit',
@@ -162,7 +164,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/admin/products/form',
             builder: (context, state) {
               var product = state.extra as Map<String, dynamic>?;
-              
+
               // Fallback to query parameter for persistence/browser refresh
               final queryProd = state.uri.queryParameters['product'];
               if (product == null && queryProd != null) {
@@ -172,7 +174,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   // Ignore parse errors
                 }
               }
-              
+
               return AdminProductForm(initialProduct: product);
             },
           ),
@@ -182,9 +184,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/admin/orders/:id',
-            builder: (context, state) => AdminOrderDetail(
-              orderId: state.pathParameters['id']!,
-            ),
+            builder: (context, state) =>
+                AdminOrderDetail(orderId: state.pathParameters['id']!),
           ),
           GoRoute(
             path: '/admin/riders',

@@ -37,11 +37,47 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       if (loc == null || !loc.isComplete) {
         showLocationDialog(context, isDismissible: false);
       }
+
+      // Initialize scrollspy listener
+      final ctrl = ref.read(shellScrollControllerProvider);
+      ctrl.addListener(_scrollSpyListener);
     });
+  }
+
+  void _scrollSpyListener() {
+    if (!mounted) return;
+
+    String? currentVisibleCategoryId;
+    double? minDistance;
+
+    for (final entry in _categoryKeys.entries) {
+      final context = entry.value.currentContext;
+      if (context == null) continue;
+
+      final renderBox = context.findRenderObject() as RenderBox;
+      final position = renderBox.localToGlobal(Offset.zero).dy;
+
+      // Check distance to the sticky header (approx 150px from top)
+      final distance = (position - 150).abs();
+
+      if (minDistance == null || distance < minDistance) {
+        minDistance = distance;
+        currentVisibleCategoryId = entry.key;
+      }
+    }
+
+    if (currentVisibleCategoryId != null) {
+      final currentSelected = ref.read(selectedCategoryProvider);
+      if (currentSelected != currentVisibleCategoryId) {
+        ref.read(selectedCategoryProvider.notifier).state =
+            currentVisibleCategoryId;
+      }
+    }
   }
 
   @override
   void dispose() {
+    ref.read(shellScrollControllerProvider).removeListener(_scrollSpyListener);
     _bannerController.dispose();
     _bannerTimer?.cancel();
     super.dispose();
@@ -53,7 +89,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       if (!mounted) return;
       _currentBannerPage++;
       if (_currentBannerPage >= count) _currentBannerPage = 0;
-      
+
       _bannerController.animateToPage(
         _currentBannerPage,
         duration: const Duration(milliseconds: 600),
@@ -63,15 +99,27 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   }
 
   void _scrollToCategory(String id) {
+    // Temporarily remove listener to avoid feedback loop during animated scroll
+    ref.read(shellScrollControllerProvider).removeListener(_scrollSpyListener);
+
     ref.read(selectedCategoryProvider.notifier).state = id;
     final key = _categoryKeys[id];
     if (key != null && key.currentContext != null) {
       Scrollable.ensureVisible(
         key.currentContext!,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOut,
-        alignment: 0.1, // Leave a little space at the top
-      );
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
+        alignment: 0.05,
+      ).then((_) {
+        // Re-add listener after scroll completes
+        if (mounted) {
+          ref
+              .read(shellScrollControllerProvider)
+              .addListener(_scrollSpyListener);
+        }
+      });
+    } else {
+      ref.read(shellScrollControllerProvider).addListener(_scrollSpyListener);
     }
   }
 
@@ -89,7 +137,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       body: SafeArea(
         child: CustomScrollView(
           controller: ref.watch(shellScrollControllerProvider),
-          cacheExtent: 1000, // Reduced from 10000 for better performance
+          cacheExtent: 400, // Reduced for better web performance
           slivers: [
             // ─── Mobile Header (only on mobile) ───
             if (isMobile)
@@ -109,7 +157,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: OraTheme.primaryOrange.withValues(alpha: 0.1),
+                                      color: OraTheme.primaryOrange.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -121,25 +171,32 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
                                             Text(
-                                              location?.displayTitle ?? 'Select Location',
+                                              location?.displayTitle ??
+                                                  'Select Location',
                                               style: TextStyle(
                                                 color: OraTheme.textMuted,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
-                                            const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 14),
+                                            const Icon(
+                                              Icons.keyboard_arrow_down,
+                                              color: Colors.grey,
+                                              size: 14,
+                                            ),
                                           ],
                                         ),
                                         Row(
                                           children: [
                                             Text(
-                                              location?.displaySubtitle ?? 'Tap to select',
+                                              location?.displaySubtitle ??
+                                                  'Tap to select',
                                               style: TextStyle(
                                                 color: OraTheme.textPrimary,
                                                 fontSize: 14,
@@ -148,14 +205,24 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                            if (location?.formattedDeliveryTime != null) ...[
+                                            if (location
+                                                    ?.formattedDeliveryTime !=
+                                                null) ...[
                                               Container(
-                                                margin: const EdgeInsets.symmetric(horizontal: 6),
-                                                width: 3, height: 3,
-                                                decoration: BoxDecoration(color: OraTheme.textMuted, shape: BoxShape.circle),
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                    ),
+                                                width: 3,
+                                                height: 3,
+                                                decoration: BoxDecoration(
+                                                  color: OraTheme.textMuted,
+                                                  shape: BoxShape.circle,
+                                                ),
                                               ),
                                               Text(
-                                                location!.formattedDeliveryTime!,
+                                                location!
+                                                    .formattedDeliveryTime!,
                                                 style: TextStyle(
                                                   color: OraTheme.primaryOrange,
                                                   fontSize: 12,
@@ -174,14 +241,6 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                           },
                         ),
                       ),
-                      // Wishlist button
-                      if (Supabase.instance.client.auth.currentSession != null) ...[
-                        _MobileHeaderIcon(
-                          icon: Icons.favorite_border,
-                          onTap: () => context.push('/wishlist'),
-                        ),
-                        const SizedBox(width: 6),
-                      ],
                       // Cart button
                       _MobileHeaderIcon(
                         icon: Icons.shopping_bag_outlined,
@@ -233,7 +292,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             bannersAsync.maybeWhen(
               data: (banners) {
                 if (banners.isEmpty) return const SliverToBoxAdapter();
-                
+
                 // Initialize timer if not already running
                 if (_bannerTimer == null && banners.length > 1) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -257,10 +316,14 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                             return CachedNetworkImage(
                               imageUrl: banner.imageUrl,
                               fit: BoxFit.cover,
-                              memCacheWidth: 1200, // Optimize for large banner display
+                              // Optimize for large banner display
                               placeholder: (context, url) => Container(
                                 color: OraTheme.cardElevated,
-                                child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
                               ),
                               errorWidget: (context, url, error) => Container(
                                 color: OraTheme.cardElevated,
@@ -365,15 +428,18 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               mainAxisSpacing: 12,
             ),
             delegate: SliverChildBuilderDelegate(
-              (_, i) => Container(
-                decoration: BoxDecoration(
-                  color: OraTheme.cardLight,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ).animate(onPlay: (c) => c.repeat()).shimmer(
-                    duration: 1200.ms,
-                    color: Colors.black.withValues(alpha: 0.04),
-                  ),
+              (_, i) =>
+                  Container(
+                        decoration: BoxDecoration(
+                          color: OraTheme.cardLight,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      )
+                      .animate(onPlay: (c) => c.repeat())
+                      .shimmer(
+                        duration: 1200.ms,
+                        color: Colors.black.withValues(alpha: 0.04),
+                      ),
               childCount: 6,
             ),
           ),
@@ -383,7 +449,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
     if (productsAsync.hasError) {
       return [
-        SliverFillRemaining(child: Center(child: Text('${productsAsync.error}')))
+        SliverFillRemaining(
+          child: Center(child: Text('${productsAsync.error}')),
+        ),
       ];
     }
 
@@ -419,7 +487,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     for (final cat in categories) {
       final catProducts = grouped[cat.id] ?? [];
       if (catProducts.isEmpty) continue;
-      
+
       _categoryKeys[cat.id] ??= GlobalKey();
 
       // Category Header Section (Name + Banner)
@@ -459,16 +527,21 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                           child: CachedNetworkImage(
                             imageUrl: cat.imageUrl!,
                             fit: BoxFit.cover,
-                            memCacheWidth: 1000,
                             placeholder: (context, url) => Container(
                               color: OraTheme.cardElevated,
                               child: const Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
                               color: OraTheme.cardElevated,
-                              child: const Icon(Icons.image_outlined, color: Colors.black12, size: 48),
+                              child: const Icon(
+                                Icons.image_outlined,
+                                color: Colors.black12,
+                                size: 48,
+                              ),
                             ),
                           ),
                         ),
@@ -489,7 +562,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             final screenWidth = constraints.crossAxisExtent;
             final isDesktop = screenWidth > 900;
             final cols = isDesktop ? 3 : 1;
-            
+
             double hPadding = 16.0;
             if (screenWidth > 1200) {
               hPadding = (screenWidth - 1200) / 2 + 16;
@@ -563,8 +636,12 @@ class _CategoryChipState extends State<_CategoryChip> {
             child: Text(
               widget.label,
               style: TextStyle(
-                color: widget.isSelected ? Colors.black : const Color(0xFF666666),
-                fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: widget.isSelected
+                    ? Colors.black
+                    : const Color(0xFF666666),
+                fontWeight: widget.isSelected
+                    ? FontWeight.w700
+                    : FontWeight.w500,
                 fontSize: 14,
               ),
             ),
@@ -603,16 +680,7 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
           if (!isMobile) {
             showDialog(
               context: context,
-              builder: (_) => Dialog(
-                backgroundColor: Colors.transparent,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 480,
-                    maxHeight: 640,
-                  ),
-                  child: ProductPopup(product: product),
-                ),
-              ),
+              builder: (_) => ProductPopup(product: product),
             );
           } else {
             showModalBottomSheet(
@@ -632,16 +700,24 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
-          transform: Matrix4.diagonal3Values(_isHovered ? 1.02 : 1.0, _isHovered ? 1.02 : 1.0, 1.0),
+          transform: Matrix4.diagonal3Values(
+            _isHovered ? 1.02 : 1.0,
+            _isHovered ? 1.02 : 1.0,
+            1.0,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _isHovered ? OraTheme.primaryOrange.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.04),
+              color: _isHovered
+                  ? OraTheme.primaryOrange.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.04),
             ),
             boxShadow: [
               BoxShadow(
-                color: _isHovered ? OraTheme.primaryOrange.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.02),
+                color: _isHovered
+                    ? OraTheme.primaryOrange.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.02),
                 blurRadius: _isHovered ? 20 : 10,
                 offset: Offset(0, _isHovered ? 8 : 4),
               ),
@@ -663,35 +739,52 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                             ? CachedNetworkImage(
                                 imageUrl: product.imageUrl!,
                                 fit: BoxFit.cover,
-                                memCacheWidth: 300,
                                 placeholder: (_, _) => Container(
-                                  color: const Color(0xFFE5C029), // approximate yellow placeholder
+                                  color: const Color(
+                                    0xFFE5C029,
+                                  ), // approximate yellow placeholder
                                   child: const Center(
-                                    child: Icon(Icons.fastfood_outlined, color: Colors.black12, size: 36),
+                                    child: Icon(
+                                      Icons.fastfood_outlined,
+                                      color: Colors.black12,
+                                      size: 36,
+                                    ),
                                   ),
                                 ),
                                 errorWidget: (_, _, _) => Container(
                                   color: const Color(0xFFE5C029),
                                   child: const Center(
-                                    child: Icon(Icons.fastfood_outlined, color: Colors.black12, size: 36),
+                                    child: Icon(
+                                      Icons.fastfood_outlined,
+                                      color: Colors.black12,
+                                      size: 36,
+                                    ),
                                   ),
                                 ),
                               )
                             : Container(
                                 color: const Color(0xFFE5C029),
                                 child: const Center(
-                                  child: Icon(Icons.fastfood_outlined, color: Colors.black12, size: 40),
+                                  child: Icon(
+                                    Icons.fastfood_outlined,
+                                    color: Colors.black12,
+                                    size: 40,
+                                  ),
                                 ),
                               ),
                       ),
                     ),
+
                     // "10% OFF" Badge (Red)
                     if (product.discountedPrice != null)
                       Positioned(
                         top: 0,
                         left: 0,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFF0000), // Pure Red
                             borderRadius: BorderRadius.circular(4),
@@ -714,7 +807,10 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                         right: 0,
                         child: Center(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black,
                               borderRadius: BorderRadius.circular(12),
@@ -750,7 +846,8 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (product.description != null && product.description!.isNotEmpty) ...[
+                      if (product.description != null &&
+                          product.description!.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
                           product.description!,
@@ -765,7 +862,10 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                       const SizedBox(height: 8),
                       // Price Pill
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black,
                           borderRadius: BorderRadius.circular(8),
@@ -814,15 +914,22 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                           ),
                           GestureDetector(
                             onTap: () async {
-                              final notifier = ref.read(wishlistProvider.notifier);
+                              final notifier = ref.read(
+                                wishlistProvider.notifier,
+                              );
                               try {
                                 await notifier.toggleWishlist(product);
                               } on Exception catch (e) {
-                                // Only show snackbar if it's the login requirement message
-                                if (e.toString().contains('log in') && context.mounted) {
+                                if (e.toString().contains('log in') &&
+                                    context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(e.toString().replaceAll('Exception: ', '')),
+                                      content: Text(
+                                        e.toString().replaceAll(
+                                          'Exception: ',
+                                          '',
+                                        ),
+                                      ),
                                       behavior: SnackBarBehavior.floating,
                                     ),
                                   );
@@ -831,7 +938,9 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                             },
                             child: Icon(
                               isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: isLiked ? const Color(0xFFE31837) : Colors.grey.shade400,
+                              color: isLiked
+                                  ? const Color(0xFFE31837)
+                                  : Colors.grey.shade400,
                               size: 24,
                             ),
                           ),
@@ -905,7 +1014,6 @@ class _MobileHeaderIcon extends StatelessWidget {
     );
   }
 }
-
 
 // ─── Sticky Category Header Delegate ───
 class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {

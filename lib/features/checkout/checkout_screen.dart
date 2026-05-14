@@ -99,10 +99,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Future<void> _placeOrder() async {
     final location = ref.read(locationProvider);
     if (location == null || !location.isComplete) {
-      context.showOraSnackBar('Please select your location from the home page', isError: true);
+      context.showOraSnackBar(
+        'Please select your location from the home page',
+        isError: true,
+      );
       return;
     }
-    
+
     // Validate mandatory fields
     if (_nameC.text.trim().isEmpty) {
       context.showOraSnackBar('Please enter your full name', isError: true);
@@ -113,8 +116,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return;
     }
 
-    if (location.type == 'delivery' && (_streetC.text.trim().isEmpty || _houseC.text.trim().isEmpty)) {
-      context.showOraSnackBar('Please enter your house and street details', isError: true);
+    if (location.type == 'delivery' &&
+        (_streetC.text.trim().isEmpty || _houseC.text.trim().isEmpty)) {
+      context.showOraSnackBar(
+        'Please enter your house and street details',
+        isError: true,
+      );
       return;
     }
 
@@ -126,16 +133,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       final settings = ref.read(settingsProvider).valueOrNull;
       final subtotal = ref.read(cartTotalProvider);
-      
-      final globalDiscount = settings != null ? subtotal * (settings.discountPercentage / 100) : 0.0;
+
+      final globalDiscount = settings != null
+          ? subtotal * (settings.discountPercentage / 100)
+          : 0.0;
       final totalDiscount = _discount + globalDiscount;
-      
-      final discountedSubtotal = (subtotal - totalDiscount).clamp(0.0, double.infinity);
-      final tax = settings != null ? discountedSubtotal * (settings.taxPercentage / 100) : 0.0;
+
+      final discountedSubtotal = (subtotal - totalDiscount).clamp(
+        0.0,
+        double.infinity,
+      );
+      final tax = settings != null
+          ? discountedSubtotal * (settings.taxPercentage / 100)
+          : 0.0;
       final deliveryFee = location.type == 'delivery'
           ? (location.deliveryFee != null && location.deliveryFee! > 0
-              ? location.deliveryFee!
-              : (settings?.deliveryFee ?? 0.0))
+                ? location.deliveryFee!
+                : (settings?.deliveryFee ?? 0.0))
           : 0.0;
       final total = discountedSubtotal + tax + deliveryFee;
 
@@ -166,7 +180,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             : _couponC.text.trim().toUpperCase(),
         'notes': _notesC.text.trim().isEmpty ? null : _notesC.text.trim(),
       };
-      
+
       final order = await _supabase
           .from('orders')
           .insert(orderData)
@@ -216,15 +230,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final location = ref.watch(locationProvider);
     final isDelivery = location?.type == 'delivery';
 
-    final globalDiscount = settings != null ? subtotal * (settings.discountPercentage / 100) : 0.0;
+    final globalDiscount = settings != null
+        ? subtotal * (settings.discountPercentage / 100)
+        : 0.0;
     final totalDiscount = _discount + globalDiscount;
-    
-    final discountedSubtotal = (subtotal - totalDiscount).clamp(0.0, double.infinity);
-    final tax = settings != null ? discountedSubtotal * (settings.taxPercentage / 100) : 0.0;
+
+    final discountedSubtotal = (subtotal - totalDiscount).clamp(
+      0.0,
+      double.infinity,
+    );
+    final tax = settings != null
+        ? discountedSubtotal * (settings.taxPercentage / 100)
+        : 0.0;
     final deliveryFee = isDelivery
         ? (location?.deliveryFee != null && location!.deliveryFee! > 0
-            ? location.deliveryFee!
-            : (settings?.deliveryFee ?? 0.0))
+              ? location.deliveryFee!
+              : (settings?.deliveryFee ?? 0.0))
         : 0.0;
     final total = discountedSubtotal + tax + deliveryFee;
 
@@ -249,7 +270,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 decoration: BoxDecoration(
                   color: OraTheme.primaryOrange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: OraTheme.primaryOrange.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: OraTheme.primaryOrange.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -264,12 +287,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         children: [
                           Text(
                             isDelivery ? 'Delivery Order' : 'Pick-Up Order',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             location?.displaySubtitle ?? '',
-                            style: TextStyle(color: OraTheme.textSecondary, fontSize: 13),
+                            style: TextStyle(
+                              color: OraTheme.textSecondary,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -301,82 +330,103 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
               // Saved Addresses
               if (isDelivery) ...[
-                ref.watch(addressProvider).when(
-                  data: (addresses) {
-                    if (addresses.isEmpty) return const SizedBox.shrink();
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ref
+                    .watch(addressProvider)
+                    .when(
+                      data: (addresses) {
+                        if (addresses.isEmpty) return const SizedBox.shrink();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Saved Addresses',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            TextButton(
-                              onPressed: () => context.push('/profile/addresses'),
-                              child: const Text('Manage'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 100,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: addresses.length,
-                            itemBuilder: (context, index) {
-                              final addr = addresses[index];
-                              final isSelected = _selectedSavedAddress?.id == addr.id;
-                              return GestureDetector(
-                                onTap: () => _onAddressSelected(addr),
-                                child: Container(
-                                  width: 160,
-                                  margin: const EdgeInsets.only(right: 12),
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? OraTheme.primaryOrange.withValues(alpha: 0.1) : OraTheme.cardLight,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: isSelected ? OraTheme.primaryOrange : Colors.black.withValues(alpha: 0.05),
-                                      width: isSelected ? 2 : 1,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        addr.label,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: isSelected ? OraTheme.primaryOrange : OraTheme.textPrimary,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${addr.house}, ${addr.street}',
-                                        style: TextStyle(fontSize: 11, color: OraTheme.textSecondary),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Saved Addresses',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                    );
-                  },
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, _) => const SizedBox.shrink(),
-                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      context.push('/profile/addresses'),
+                                  child: const Text('Manage'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 100,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: addresses.length,
+                                itemBuilder: (context, index) {
+                                  final addr = addresses[index];
+                                  final isSelected =
+                                      _selectedSavedAddress?.id == addr.id;
+                                  return GestureDetector(
+                                    onTap: () => _onAddressSelected(addr),
+                                    child: Container(
+                                      width: 160,
+                                      margin: const EdgeInsets.only(right: 12),
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? OraTheme.primaryOrange.withValues(
+                                                alpha: 0.1,
+                                              )
+                                            : OraTheme.cardLight,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? OraTheme.primaryOrange
+                                              : Colors.black.withValues(
+                                                  alpha: 0.05,
+                                                ),
+                                          width: isSelected ? 2 : 1,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            addr.label,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: isSelected
+                                                  ? OraTheme.primaryOrange
+                                                  : OraTheme.textPrimary,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${addr.house}, ${addr.street}',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: OraTheme.textSecondary,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                        );
+                      },
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, _) => const SizedBox.shrink(),
+                    ),
 
                 Text(
                   'Address Details',
@@ -480,7 +530,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     if (deliveryFee >= 0)
                       _SummaryRow(
                         label: 'Delivery Fee',
-                        value: deliveryFee == 0 ? 'Free' : 'Rs. ${deliveryFee.toStringAsFixed(0)}',
+                        value: deliveryFee == 0
+                            ? 'Free'
+                            : 'Rs. ${deliveryFee.toStringAsFixed(0)}',
                         valueColor: deliveryFee == 0 ? OraTheme.success : null,
                       ),
                     _SummaryRow(label: 'Payment', value: 'Cash on Delivery'),

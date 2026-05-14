@@ -58,14 +58,13 @@ class WishlistNotifier extends AsyncNotifier<List<Product>> {
       state = AsyncData([product, ...currentItems]);
       try {
         // upsert prevents unique-constraint errors if row already exists
-        await _supabase.from('wishlist_items').upsert(
-          {
-            'user_id': user.id,
-            'product_id': product.id,
-          },
-          onConflict: 'user_id,product_id',
-          ignoreDuplicates: true,
-        );
+        await _supabase
+            .from('wishlist_items')
+            .upsert(
+              {'user_id': user.id, 'product_id': product.id},
+              onConflict: 'user_id,product_id',
+              ignoreDuplicates: true,
+            );
       } catch (_) {
         // Silently revert if insert fails; item was already shown as liked
         ref.invalidateSelf();

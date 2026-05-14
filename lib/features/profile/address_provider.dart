@@ -4,9 +4,10 @@ import 'package:ora/data/models/models.dart';
 
 final _supabase = Supabase.instance.client;
 
-final addressProvider = AsyncNotifierProvider<AddressNotifier, List<UserAddress>>(() {
-  return AddressNotifier();
-});
+final addressProvider =
+    AsyncNotifierProvider<AddressNotifier, List<UserAddress>>(() {
+      return AddressNotifier();
+    });
 
 class AddressNotifier extends AsyncNotifier<List<UserAddress>> {
   @override

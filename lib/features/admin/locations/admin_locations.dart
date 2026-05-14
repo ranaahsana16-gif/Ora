@@ -237,7 +237,9 @@ class _AreaListState extends State<_AreaList> {
   Future<void> _showAreaForm([Map<String, dynamic>? area]) async {
     final nameC = TextEditingController(text: area?['name'] ?? '');
     final feeC = TextEditingController(text: '${area?['delivery_fee'] ?? ''}');
-    final timeC = TextEditingController(text: area?['estimated_delivery_time'] ?? '');
+    final timeC = TextEditingController(
+      text: area?['estimated_delivery_time'] ?? '',
+    );
 
     final res = await showDialog<bool>(
       context: context,
@@ -278,11 +280,16 @@ class _AreaListState extends State<_AreaList> {
                 if (area == null) {
                   await _supabase.from('areas').insert(data);
                 } else {
-                  await _supabase.from('areas').update(data).eq('id', area['id']);
+                  await _supabase
+                      .from('areas')
+                      .update(data)
+                      .eq('id', area['id']);
                 }
                 if (context.mounted) Navigator.pop(context, true);
               } catch (e) {
-                if (context.mounted) context.showOraSnackBar('$e', isError: true);
+                if (context.mounted) {
+                  context.showOraSnackBar('$e', isError: true);
+                }
               }
             },
             child: const Text('Save'),
@@ -335,7 +342,10 @@ class _AreaListState extends State<_AreaList> {
           ),
           const SizedBox(height: 12),
           if (_areas.isEmpty)
-            const Text('No areas added yet.', style: TextStyle(color: OraTheme.textMuted))
+            const Text(
+              'No areas added yet.',
+              style: TextStyle(color: OraTheme.textMuted),
+            )
           else
             ListView.builder(
               shrinkWrap: true,
@@ -351,7 +361,10 @@ class _AreaListState extends State<_AreaList> {
                     border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: ListTile(
-                    title: Text(a['name'] as String, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(
+                      a['name'] as String,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     subtitle: Text(
                       'Fee: ${a['delivery_fee'] ?? 0} | Time: ${a['estimated_delivery_time'] ?? 'N/A'}',
                       style: const TextStyle(fontSize: 12),
@@ -364,7 +377,11 @@ class _AreaListState extends State<_AreaList> {
                           onPressed: () => _showAreaForm(a),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                            size: 20,
+                          ),
                           onPressed: () => _deleteArea(a['id'] as String),
                         ),
                       ],
@@ -378,7 +395,6 @@ class _AreaListState extends State<_AreaList> {
     );
   }
 }
-
 
 class _OutletsTab extends ConsumerStatefulWidget {
   const _OutletsTab();

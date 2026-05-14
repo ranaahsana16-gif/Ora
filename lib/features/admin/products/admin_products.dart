@@ -119,10 +119,12 @@ class _AdminProductsState extends State<AdminProducts> {
                           imageUrl: p['image_url'] as String,
                           fit: BoxFit.cover,
                           placeholder: (_, _) => const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2)),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
                           errorWidget: (_, _, _) => const Icon(
-                              Icons.fastfood_outlined,
-                              color: Colors.black54),
+                            Icons.fastfood_outlined,
+                            color: Colors.black54,
+                          ),
                         )
                       : const Icon(
                           Icons.fastfood_outlined,

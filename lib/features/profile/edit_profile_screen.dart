@@ -38,15 +38,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Future<void> _pickImage() async {
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+      );
       if (image == null) return;
 
       setState(() => _loading = true);
 
       final bytes = await image.readAsBytes();
       final fileExt = image.name.split('.').last;
-      final fileName = '${ref.read(currentUserProvider)?.id}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-      
+      final fileName =
+          '${ref.read(currentUserProvider)?.id}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
       final supabase = Supabase.instance.client;
       await supabase.storage.from('avatars').uploadBinary(fileName, bytes);
       final url = supabase.storage.from('avatars').getPublicUrl(fileName);
@@ -57,17 +61,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       });
     } catch (e) {
       setState(() => _loading = false);
-      if (mounted) context.showOraSnackBar('Failed to upload image: $e', isError: true);
+      if (mounted) {
+        context.showOraSnackBar('Failed to upload image: $e', isError: true);
+      }
     }
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _loading = true);
     try {
       final profile = ref.read(profileProvider).valueOrNull;
-      
+
       final newName = _nameC.text.trim();
 
       await AuthService.updateUser(
@@ -83,7 +89,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        context.showOraSnackBar(e.toString().replaceAll('Exception: ', ''), isError: true);
+        context.showOraSnackBar(
+          e.toString().replaceAll('Exception: ', ''),
+          isError: true,
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -126,10 +135,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                     fit: BoxFit.cover,
                                   )
                                 : null,
-                            border: Border.all(color: OraTheme.primaryOrange.withValues(alpha: 0.2), width: 4),
+                            border: Border.all(
+                              color: OraTheme.primaryOrange.withValues(
+                                alpha: 0.2,
+                              ),
+                              width: 4,
+                            ),
                           ),
                           child: _avatarUrl == null
-                              ? const Icon(Icons.person, size: 60, color: OraTheme.textMuted)
+                              ? const Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: OraTheme.textMuted,
+                                )
                               : null,
                         ),
                         Positioned(
@@ -141,7 +159,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               color: OraTheme.primaryOrange,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ],
@@ -153,7 +175,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     controller: _nameC,
                     label: 'Full Name',
                     prefixIcon: Icons.person_outline,
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Required' : null,
                   ),
                   const SizedBox(height: 40),
 

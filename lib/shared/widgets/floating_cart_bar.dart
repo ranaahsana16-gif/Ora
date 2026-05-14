@@ -50,7 +50,11 @@ class FloatingCartBar extends ConsumerWidget {
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 22),
+                  child: const Icon(
+                    Icons.shopping_bag_outlined,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Column(
@@ -84,7 +88,11 @@ class FloatingCartBar extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 14),
-                const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ],
             ),
           ),

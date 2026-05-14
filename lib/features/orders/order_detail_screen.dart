@@ -19,49 +19,49 @@ class OrderDetailScreen extends ConsumerStatefulWidget {
 class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   AppOrder? _order;
   bool _loading = true;
-  late final RealtimeChannel _channel;
+  StreamSubscription? _subscription;
 
   @override
   void initState() {
     super.initState();
     _loadOrder();
-    _channel = _supabase
-        .channel('order-${widget.orderId}')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.update,
-          schema: 'public',
-          table: 'orders',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'id',
-            value: widget.orderId,
-          ),
-          callback: (payload) {
-            if (mounted) _loadOrder();
-          },
-        )
-        .subscribe();
+    _subscription = _supabase
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('id', widget.orderId)
+        .listen((data) {
+          if (data.isNotEmpty && mounted) {
+            _loadOrder(); // Reload full order with items
+          }
+        });
   }
 
   @override
   void dispose() {
-    _supabase.removeChannel(_channel);
+    _subscription?.cancel();
     super.dispose();
   }
 
   Future<void> _loadOrder() async {
-    final data = await _supabase
-        .from('orders')
-        .select('*, order_items(*)')
-        .eq('id', widget.orderId)
-        .single();
-    if (mounted) {
-      setState(() {
-        _order = AppOrder.fromJson(data);
-        _loading = false;
-      });
+    try {
+      final data = await _supabase
+          .from('orders')
+          .select('*, order_items(*)')
+          .eq('id', widget.orderId)
+          .single();
+      if (mounted) {
+        setState(() {
+          _order = AppOrder.fromJson(data);
+          _loading = false;
+        });
+        debugPrint('Order status updated: ${_order?.status}');
+      }
+    } catch (e) {
+      debugPrint('Error loading order: $e');
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +86,12 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Status tracker
-                    _StatusTracker(currentStatus: _order!.status),
+                    _StatusTracker(
+                      currentStatus: _order!.status,
+                      orderType: _order!.deliveryType,
+                    ),
+                    const SizedBox(height: 16),
+
                     const SizedBox(height: 28),
 
                     Text(
@@ -197,15 +202,39 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                     ),
                     if (_order!.address != null)
                       _Row(
-                        _order!.deliveryType == 'delivery' ? 'Address' : 'Pickup',
                         _order!.deliveryType == 'delivery'
-                            ? [
-                                _order!.address!['house'],
-                                _order!.address!['street'],
-                                _order!.address!['block'],
-                                _order!.address!['area'],
-                                _order!.address!['city']
-                              ].where((e) => e != null && e.toString().trim().isNotEmpty).join(', ')
+                            ? 'Address'
+                            : 'Pickup',
+                        _order!.deliveryType == 'delivery'
+                            ? ([
+                                        _order!.address!['house'],
+                                        _order!.address!['street'],
+                                        _order!.address!['block'],
+                                        _order!.address!['area'],
+                                        _order!.address!['city'],
+                                      ]
+                                      .where(
+                                        (e) =>
+                                            e != null &&
+                                            e.toString().trim().isNotEmpty,
+                                      )
+                                      .toList()
+                                      .isEmpty
+                                  ? (_order!.address!['address_line'] ??
+                                        'No address provided')
+                                  : [
+                                          _order!.address!['house'],
+                                          _order!.address!['street'],
+                                          _order!.address!['block'],
+                                          _order!.address!['area'],
+                                          _order!.address!['city'],
+                                        ]
+                                        .where(
+                                          (e) =>
+                                              e != null &&
+                                              e.toString().trim().isNotEmpty,
+                                        )
+                                        .join(', '))
                             : (_order!.address!['outlet'] ?? 'Unknown Outlet'),
                       ),
                   ],
@@ -247,15 +276,26 @@ class _Row extends StatelessWidget {
 
 class _StatusTracker extends StatelessWidget {
   final String currentStatus;
-  const _StatusTracker({required this.currentStatus});
+  final String orderType;
+  const _StatusTracker({required this.currentStatus, required this.orderType});
 
-  static const _steps = [
-    ('pending', Icons.hourglass_empty, 'Pending'),
-    ('accepted', Icons.check_circle_outline, 'Accepted'),
-    ('preparing', Icons.restaurant, 'Preparing'),
-    ('on_the_way', Icons.delivery_dining, 'On the Way'),
-    ('delivered', Icons.done_all, 'Delivered'),
-  ];
+  List<(String, IconData, String)> _getSteps() {
+    if (orderType == 'pickup') {
+      return [
+        ('pending', Icons.access_time, 'Pending'),
+        ('accepted', Icons.check_circle_outline, 'Accepted'),
+        ('ready_for_pickup', Icons.shopping_bag, 'Ready for Pickup'),
+        ('picked_up', Icons.check_circle, 'Picked Up'),
+      ];
+    }
+    return [
+      ('pending', Icons.access_time, 'Pending'),
+      ('accepted', Icons.check_circle_outline, 'Accepted'),
+      ('preparing', Icons.restaurant, 'Preparing'),
+      ('on_the_way', Icons.delivery_dining, 'On the Way'),
+      ('delivered', Icons.check_circle, 'Delivered'),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -283,12 +323,24 @@ class _StatusTracker extends StatelessWidget {
       );
     }
 
-    final currentIdx = _steps.indexWhere((s) => s.$1 == currentStatus);
+    final steps = _getSteps();
+    final currentIdx = steps.indexWhere((s) => s.$1 == currentStatus);
+
+    // If status is not in our step list (e.g. unknown or terminal), show last step if delivered
+    int effectiveIdx = currentIdx;
+    if (currentIdx == -1) {
+      if (currentStatus == 'delivered') {
+        effectiveIdx = steps.length - 1;
+      } else {
+        effectiveIdx = 0; // Fallback to start
+      }
+    }
+
     return Row(
-      children: List.generate(_steps.length * 2 - 1, (i) {
+      children: List.generate(steps.length * 2 - 1, (i) {
         if (i.isOdd) {
           final stepIdx = i ~/ 2;
-          final done = stepIdx < currentIdx;
+          final done = stepIdx < effectiveIdx;
           return Expanded(
             child: Container(
               height: 3,
@@ -299,9 +351,9 @@ class _StatusTracker extends StatelessWidget {
           );
         }
         final stepIdx = i ~/ 2;
-        final step = _steps[stepIdx];
-        final isActive = stepIdx <= currentIdx;
-        final isCurrent = stepIdx == currentIdx;
+        final step = steps[stepIdx];
+        final isActive = stepIdx <= effectiveIdx;
+        final isCurrent = stepIdx == effectiveIdx;
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [

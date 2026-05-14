@@ -109,14 +109,18 @@ class Product {
       name: json['name'] as String,
       description: json['description'] as String?,
       price: (json['price'] as num).toDouble(),
-      discountedPrice: json['discounted_price'] != null ? (json['discounted_price'] as num).toDouble() : null,
+      discountedPrice: json['discounted_price'] != null
+          ? (json['discounted_price'] as num).toDouble()
+          : null,
       imageUrl: json['image_url'] as String?,
       isAvailable: json['is_available'] as bool? ?? true,
       isNew: json['is_new'] as bool? ?? false,
       sortOrder: json['sort_order'] as int? ?? 0,
       optionGroups: json['product_option_groups'] != null
           ? (json['product_option_groups'] as List)
-                .map((e) => ProductOptionGroup.fromJson(e as Map<String, dynamic>))
+                .map(
+                  (e) => ProductOptionGroup.fromJson(e as Map<String, dynamic>),
+                )
                 .toList()
           : null,
     );

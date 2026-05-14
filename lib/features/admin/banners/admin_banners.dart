@@ -47,7 +47,10 @@ class _AdminBannersState extends State<AdminBanners> {
 
   Future<void> _uploadBanner() async {
     if (_banners.length >= 3) {
-      context.showOraSnackBar('Maximum 3 banners allowed in Main group', isError: true);
+      context.showOraSnackBar(
+        'Maximum 3 banners allowed in Main group',
+        isError: true,
+      );
       return;
     }
     try {
@@ -57,9 +60,11 @@ class _AdminBannersState extends State<AdminBanners> {
       setState(() => _isUploading = true);
 
       final bytes = await image.readAsBytes();
-      final fileExt = image.name.split('.').last.isEmpty ? 'jpg' : image.name.split('.').last;
+      final fileExt = image.name.split('.').last.isEmpty
+          ? 'jpg'
+          : image.name.split('.').last;
       final fileName = 'hero_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-      
+
       await _supabase.storage.from('banners').uploadBinary(fileName, bytes);
       final imageUrl = _supabase.storage.from('banners').getPublicUrl(fileName);
 
@@ -76,7 +81,9 @@ class _AdminBannersState extends State<AdminBanners> {
         _load();
       }
     } catch (e) {
-      if (mounted) context.showOraSnackBar('Failed to upload: $e', isError: true);
+      if (mounted) {
+        context.showOraSnackBar('Failed to upload: $e', isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }
@@ -90,22 +97,27 @@ class _AdminBannersState extends State<AdminBanners> {
       setState(() => _isUploading = true);
 
       final bytes = await image.readAsBytes();
-      final fileExt = image.name.split('.').last.isEmpty ? 'jpg' : image.name.split('.').last;
+      final fileExt = image.name.split('.').last.isEmpty
+          ? 'jpg'
+          : image.name.split('.').last;
       final fileName = 'hero_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-      
+
       await _supabase.storage.from('banners').uploadBinary(fileName, bytes);
       final imageUrl = _supabase.storage.from('banners').getPublicUrl(fileName);
 
-      await _supabase.from('banners').update({
-        'image_url': imageUrl,
-      }).eq('id', banner['id']);
+      await _supabase
+          .from('banners')
+          .update({'image_url': imageUrl})
+          .eq('id', banner['id']);
 
       if (mounted) {
         context.showOraSnackBar('Banner replaced successfully!');
         _load();
       }
     } catch (e) {
-      if (mounted) context.showOraSnackBar('Failed to replace banner: $e', isError: true);
+      if (mounted) {
+        context.showOraSnackBar('Failed to replace banner: $e', isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }
@@ -146,41 +158,76 @@ class _AdminBannersState extends State<AdminBanners> {
                         width: double.infinity,
                       ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           TextButton.icon(
-                            icon: const Icon(Icons.image_search, size: 20, color: Colors.black),
-                            label: const Text('Replace Banner', style: TextStyle(color: Colors.black)),
+                            icon: const Icon(
+                              Icons.image_search,
+                              size: 20,
+                              color: Colors.black,
+                            ),
+                            label: const Text(
+                              'Replace Banner',
+                              style: TextStyle(color: Colors.black),
+                            ),
                             onPressed: () => _replaceBanner(banner),
                           ),
                           const Spacer(),
                           IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 20, color: OraTheme.error),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              size: 20,
+                              color: OraTheme.error,
+                            ),
                             onPressed: () async {
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
                                   title: const Text('Delete Banner?'),
-                                  content: const Text('Are you sure you want to remove this hero banner?'),
+                                  content: const Text(
+                                    'Are you sure you want to remove this hero banner?',
+                                  ),
                                   actions: [
-                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                                    TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: OraTheme.error))),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(color: OraTheme.error),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               );
-                                if (confirm == true && mounted && context.mounted) {
-                                  final messenger = ScaffoldMessenger.of(context);
-                                  try {
-                                    await _supabase.from('banners').delete().eq('id', banner['id']);
-                                    if (mounted) _load();
-                                  } catch (e) {
-                                    if (mounted) {
-                                      messenger.showSnackBar(SnackBar(content: Text('Delete failed: $e')));
-                                    }
+                              if (confirm == true &&
+                                  mounted &&
+                                  context.mounted) {
+                                final messenger = ScaffoldMessenger.of(context);
+                                try {
+                                  await _supabase
+                                      .from('banners')
+                                      .delete()
+                                      .eq('id', banner['id']);
+                                  if (mounted) _load();
+                                } catch (e) {
+                                  if (mounted) {
+                                    messenger.showSnackBar(
+                                      SnackBar(
+                                        content: Text('Delete failed: $e'),
+                                      ),
+                                    );
                                   }
                                 }
+                              }
                             },
                           ),
                         ],
@@ -210,4 +257,3 @@ class _AdminBannersState extends State<AdminBanners> {
     );
   }
 }
-

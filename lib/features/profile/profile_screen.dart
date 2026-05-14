@@ -43,7 +43,9 @@ class ProfileScreen extends ConsumerWidget {
                       height: 80,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: profile.avatarUrl == null ? OraTheme.primaryGradient : null,
+                        gradient: profile.avatarUrl == null
+                            ? OraTheme.primaryGradient
+                            : null,
                         image: profile.avatarUrl != null
                             ? DecorationImage(
                                 image: NetworkImage(profile.avatarUrl!),

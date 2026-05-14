@@ -4,6 +4,32 @@ import 'package:ora/data/models/models.dart';
 
 final _supabase = Supabase.instance.client;
 
+class CategoryWithProducts {
+  final Category category;
+  final List<Product> products;
+  CategoryWithProducts({required this.category, required this.products});
+}
+
+// ─── Menu Provider (Combined) ───
+final menuProvider = FutureProvider<List<CategoryWithProducts>>((ref) async {
+  final categories = await ref.watch(categoriesProvider.future);
+  final products = await ref.watch(productsProvider.future);
+
+  final grouped = <String, List<Product>>{};
+  for (final p in products) {
+    grouped.putIfAbsent(p.categoryId, () => []).add(p);
+    if (p.categoryId2 != null && p.categoryId2 != p.categoryId) {
+      grouped.putIfAbsent(p.categoryId2!, () => []).add(p);
+    }
+  }
+
+  return categories
+      .map(
+        (c) => CategoryWithProducts(category: c, products: grouped[c.id] ?? []),
+      )
+      .toList();
+});
+
 // ─── Categories Provider ───
 final categoriesProvider = FutureProvider<List<Category>>((ref) async {
   final data = await _supabase
@@ -43,11 +69,11 @@ final productsProvider = FutureProvider<List<Product>>((ref) async {
 final groupedProductsProvider = Provider<Map<String, List<Product>>>((ref) {
   final products = ref.watch(productsProvider).valueOrNull ?? [];
   final grouped = <String, List<Product>>{};
-  
+
   for (final p in products) {
     // Primary category
     grouped.putIfAbsent(p.categoryId, () => []).add(p);
-    
+
     // Secondary category (add product to both if exists)
     if (p.categoryId2 != null && p.categoryId2 != p.categoryId) {
       grouped.putIfAbsent(p.categoryId2!, () => []).add(p);
@@ -244,7 +270,7 @@ class CartNotifier extends AsyncNotifier<List<CartItem>> {
     if (user == null || _guestItems.isEmpty) return;
 
     final cartId = await _getCartId();
-    
+
     for (final item in _guestItems) {
       try {
         await _supabase.from('cart_items').insert({

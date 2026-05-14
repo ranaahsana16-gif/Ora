@@ -100,8 +100,7 @@ String _friendlyAuthMessage(AuthException e) {
   }
 
   // Signup disabled
-  if (msg.contains('signups not allowed') ||
-      code.contains('signup_disabled')) {
+  if (msg.contains('signups not allowed') || code.contains('signup_disabled')) {
     return 'Signups are currently disabled. Please contact support.';
   }
 
@@ -136,8 +135,8 @@ class AuthService {
         email: email,
         password: password,
         data: {'full_name': fullName},
-        emailRedirectTo: const bool.hasEnvironment('dart.library.js_util') 
-            ? Uri.base.origin 
+        emailRedirectTo: const bool.hasEnvironment('dart.library.js_util')
+            ? Uri.base.origin
             : null,
       );
 
@@ -156,8 +155,8 @@ class AuthService {
       await _supabase.auth.resend(
         type: OtpType.signup,
         email: email,
-        emailRedirectTo: const bool.hasEnvironment('dart.library.js_util') 
-            ? Uri.base.origin 
+        emailRedirectTo: const bool.hasEnvironment('dart.library.js_util')
+            ? Uri.base.origin
             : null,
       );
     } on AuthException catch (e) {
@@ -171,9 +170,10 @@ class AuthService {
   }) async {
     try {
       // Resolve identifier (Name, Phone, or Email) to Email using RPC
-      final response = await _supabase.rpc('get_email_by_identifier', params: {
-        'p_identifier': identifier.trim(),
-      });
+      final response = await _supabase.rpc(
+        'get_email_by_identifier',
+        params: {'p_identifier': identifier.trim()},
+      );
 
       final String resolvedEmail = (response as String?) ?? identifier.trim();
 
@@ -198,10 +198,7 @@ class AuthService {
       final attributes = UserAttributes(
         email: email,
         password: password,
-        data: {
-          'full_name': ?fullName,
-          'avatar_url': ?avatarUrl,
-        },
+        data: {'full_name': ?fullName, 'avatar_url': ?avatarUrl},
       );
       await _supabase.auth.updateUser(attributes);
 
