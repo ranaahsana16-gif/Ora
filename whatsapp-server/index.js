@@ -229,3 +229,14 @@ function startPolling() {
 // ─── Initialize ─────────────────────────────────────────────────────────────
 console.log('🚀  Starting Ora WhatsApp OTP Server...');
 client.initialize();
+
+// ─── HTTP Health-Check Server (For Hugging Face / Render) ─────────────────────
+const http = require('http');
+const PORT = process.env.PORT || 7860;
+const healthServer = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end(isReady ? 'WhatsApp client is ready!' : 'WhatsApp client is initializing...');
+});
+healthServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`📡 Health-check web server listening on port ${PORT}`);
+});
