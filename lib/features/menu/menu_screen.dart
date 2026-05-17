@@ -15,6 +15,7 @@ import 'package:ora/shared/widgets/ora_scaffold.dart';
 import 'package:ora/features/location/location_provider.dart';
 import 'package:ora/features/location/location_dialog.dart';
 import 'package:ora/shared/widgets/floating_cart_bar.dart';
+import 'package:ora/features/settings/settings_provider.dart';
 
 class MenuScreen extends ConsumerStatefulWidget {
   const MenuScreen({super.key});
@@ -130,6 +131,10 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     final bannersAsync = ref.watch(bannersProvider);
     final cartCount = ref.watch(cartItemCountProvider);
     final isMobile = MediaQuery.sizeOf(context).width <= 600;
+    final settingsAsync = ref.watch(settingsProvider);
+    final isShopOpen = settingsAsync.valueOrNull?.isCurrentlyOpen ?? true;
+    final isSettingsLoading = settingsAsync.isLoading;
+    final shopTimes = settingsAsync.valueOrNull;
 
     return Scaffold(
       floatingActionButton: isMobile ? const FloatingCartBar() : null,
@@ -139,6 +144,38 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           controller: ref.watch(shellScrollControllerProvider),
           cacheExtent: 400, // Reduced for better web performance
           slivers: [
+            // ─── Closed Banner ───
+            if (!isSettingsLoading && !isShopOpen)
+              SliverToBoxAdapter(
+                child: Container(
+                  width: double.infinity,
+                  color: OraTheme.error.withValues(alpha: 0.1),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.lock_clock_outlined,
+                        color: OraTheme.error,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          shopTimes?.openingTime != null && shopTimes?.closingTime != null
+                              ? 'We are currently closed. Shop hours: ${shopTimes!.openingTime!.substring(0, 5)} to ${shopTimes.closingTime!.substring(0, 5)}'
+                              : 'We are currently closed. Checkout is temporarily disabled.',
+                          style: const TextStyle(
+                            color: OraTheme.error,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
             // ─── Mobile Header (only on mobile) ───
             if (isMobile)
               SliverToBoxAdapter(

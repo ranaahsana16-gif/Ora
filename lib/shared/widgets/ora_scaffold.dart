@@ -7,6 +7,9 @@ import 'package:ora/features/menu/menu_provider.dart';
 import 'package:ora/features/menu/cart_sheet.dart';
 import 'package:ora/features/location/location_provider.dart';
 import 'package:ora/features/location/location_dialog.dart';
+import 'package:ora/features/notifications/notifications_provider.dart';
+import 'package:ora/features/settings/settings_provider.dart';
+import 'package:ora/features/auth/worker_login_sheet.dart';
 
 final shellScrollControllerProvider = Provider((ref) {
   final controller = ScrollController();
@@ -56,6 +59,18 @@ class _OraShellState extends ConsumerState<OraShell> {
 
   @override
   Widget build(BuildContext context) {
+    final settingsAsync = ref.watch(settingsProvider);
+    final isShopOpen = settingsAsync.valueOrNull?.isCurrentlyOpen ?? true;
+    final isSettingsLoading = settingsAsync.isLoading;
+
+    if (!isSettingsLoading && !isShopOpen) {
+      final shopTimes = settingsAsync.valueOrNull;
+      return ClosedStorefrontOverlay(
+        openingTime: shopTimes?.openingTime,
+        closingTime: shopTimes?.closingTime,
+      );
+    }
+
     final cartCount = ref.watch(cartItemCountProvider);
     final loc = widget.location;
     final isHomePage = loc == '/';
@@ -204,12 +219,22 @@ class _OraShellState extends ConsumerState<OraShell> {
                           ),
 
                           const Spacer(),
-                          // Wishlist
+                          // Notifications bell
                           if (isLoggedIn) ...[
-                            _HeaderIconButton(
-                              icon: Icons.favorite_border,
-                              onTap: () => context.go('/wishlist'),
-                              isActive: loc.startsWith('/wishlist'),
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final unread = ref.watch(
+                                  unreadNotificationCountProvider,
+                                );
+                                return _HeaderIconButton(
+                                  icon: Icons.notifications_none_rounded,
+                                  badge: unread,
+                                  onTap: () =>
+                                      context.go('/notifications'),
+                                  isActive:
+                                      loc.startsWith('/notifications'),
+                                );
+                              },
                             ),
                             const SizedBox(width: 16),
                           ],
@@ -472,6 +497,242 @@ class _HeaderIconButtonState extends State<_HeaderIconButton> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class ClosedStorefrontOverlay extends StatelessWidget {
+  final String? openingTime;
+  final String? closingTime;
+
+  const ClosedStorefrontOverlay({
+    super.key,
+    this.openingTime,
+    this.closingTime,
+  });
+
+  String _formatDisplayTime(String? timeStr) {
+    if (timeStr == null || timeStr.isEmpty) return 'Not Set';
+    try {
+      final parts = timeStr.split(':');
+      if (parts.length >= 2) {
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        final period = hour >= 12 ? 'PM' : 'AM';
+        final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+        final displayMinute = minute.toString().padLeft(2, '0');
+        return '$displayHour:$displayMinute $period';
+      }
+    } catch (_) {}
+    return timeStr;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasTiming = openingTime != null && closingTime != null;
+    final timingRange = hasTiming
+        ? '${_formatDisplayTime(openingTime)} to ${_formatDisplayTime(closingTime)}'
+        : 'our scheduled hours';
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // ─── Ambient Glow Accents ───
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: OraTheme.primaryOrange.withValues(alpha: 0.15),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.amber.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          // ─── Content ───
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Brand / Logo
+                    const Text(
+                      'Ora',
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+
+                    // Beautiful glowing clock icon container
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.03),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: OraTheme.primaryOrange.withValues(alpha: 0.1),
+                            blurRadius: 30,
+                            spreadRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.storefront_outlined,
+                        size: 64,
+                        color: OraTheme.primaryOrange,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Closed text
+                    const Text(
+                      'We are currently closed',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Subtext
+                    Text(
+                      'We are busy prepping fresh ingredients and perfecting our recipes for you. We will be back soon!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 15,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Operational timings card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.access_time_filled_rounded,
+                                color: OraTheme.primaryOrange,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'OPERATING HOURS',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            timingRange,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+
+                    // Bottom info label
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.favorite_rounded,
+                          color: Colors.red.shade400,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Thank you for your love for Ora',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => const WorkerLoginSheet(),
+                          );
+                        },
+                        child: Text(
+                          'Staff Login Portal',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.35),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                            decorationColor: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

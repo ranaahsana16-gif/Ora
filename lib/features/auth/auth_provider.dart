@@ -73,103 +73,119 @@ String _friendlyAuthMessage(AuthException e) {
   final msg = e.message.toLowerCase();
   final code = e.code?.toLowerCase() ?? '';
 
-  // Email not confirmed
-  if (msg.contains('email not confirmed') ||
-      code.contains('email_not_confirmed') ||
-      msg.contains('not confirmed')) {
-    return 'Your email is not verified. Please check your inbox and verify your email before logging in.';
-  }
-
-  // Invalid credentials (wrong email or password)
   if (msg.contains('invalid login credentials') ||
       msg.contains('invalid credentials') ||
       code.contains('invalid_credentials')) {
     return 'Incorrect email or password. Please try again.';
   }
 
-  // User not found
   if (msg.contains('user not found') || code.contains('user_not_found')) {
-    return 'No account found with this email. Please sign up first.';
+    return 'No account found with this email. Please contact support.';
   }
 
-  // Too many requests
   if (msg.contains('rate limit') ||
       msg.contains('too many requests') ||
       code.contains('over_request_rate_limit')) {
     return 'Too many attempts. Please wait a moment and try again.';
   }
 
-  // Signup disabled
   if (msg.contains('signups not allowed') || code.contains('signup_disabled')) {
     return 'Signups are currently disabled. Please contact support.';
   }
 
-  // User already registered
   if (msg.contains('already registered') ||
       msg.contains('already exists') ||
       code.contains('user_already_exists')) {
     return 'An account with this email already exists. Please log in instead.';
   }
 
-  // Weak password
   if (msg.contains('password') && msg.contains('weak') ||
       code.contains('weak_password')) {
     return 'Password is too weak. Please use a stronger password.';
   }
 
-  // Generic fallback — strip the technical prefix
   return e.message;
 }
 
 // ─── Auth Actions ───
 class AuthService {
-  /// Signs up and returns `true` if email confirmation is required.
-  static Future<bool> signUp({
-    required String email,
-    required String password,
-    required String fullName,
-    String? phone,
-  }) async {
-    try {
-      final response = await _supabase.auth.signUp(
-        email: email,
-        password: password,
-        data: {'full_name': fullName},
-        emailRedirectTo: const bool.hasEnvironment('dart.library.js_util')
-            ? Uri.base.origin
-            : null,
-      );
+  // ── WhatsApp OTP ──────────────────────────────────────────────────────────
 
-      // If no session was returned, email confirmation is required
-      if (response.session == null) {
-        return true; // email confirmation needed
-      }
-      return false; // auto-confirmed, signed in
-    } on AuthException catch (e) {
-      throw Exception(_friendlyAuthMessage(e));
+  /// Requests an OTP to be sent via WhatsApp.
+  /// Inserts into otp_requests table via RPC; the Node.js server picks it up
+  /// and sends the code to the customer's WhatsApp.
+  static Future<void> sendWhatsAppOtp(String phone) async {
+    try {
+      await _supabase.rpc('request_whatsapp_otp', params: {'p_phone': phone});
+    } catch (e) {
+      throw Exception('Failed to send verification code. Please try again.');
     }
   }
 
-  static Future<void> resendVerificationEmail(String email) async {
+  /// Verifies an OTP code for a given phone number.
+  /// Returns true if valid, false if expired/wrong.
+  static Future<bool> verifyWhatsAppOtp(String phone, String code) async {
     try {
-      await _supabase.auth.resend(
-        type: OtpType.signup,
+      final result = await _supabase.rpc(
+        'verify_otp',
+        params: {'p_phone': phone, 'p_code': code},
+      );
+      return result as bool? ?? false;
+    } catch (e) {
+      throw Exception('Verification failed. Please try again.');
+    }
+  }
+
+  /// Signs in or creates a customer account using Supabase phone OTP.
+  /// Call this AFTER verifyWhatsAppOtp returns true.
+  static Future<void> signInWithPhone(String phone) async {
+    try {
+      final res = await _supabase.functions.invoke(
+        'sign-in-with-phone',
+        body: {'phone': phone},
+      );
+      final data = res.data as Map<String, dynamic>;
+      final token = data['token'].toString();
+      final email = data['email'] as String;
+      
+      await _supabase.auth.verifyOTP(
         email: email,
-        emailRedirectTo: const bool.hasEnvironment('dart.library.js_util')
-            ? Uri.base.origin
-            : null,
+        token: token,
+        type: OtpType.email,
       );
     } on AuthException catch (e) {
       throw Exception(_friendlyAuthMessage(e));
+    } on FunctionException catch (e) {
+      throw Exception('Server Error: ${e.details ?? e.reasonPhrase}');
+    } catch (e) {
+      throw Exception('Sign-in failed: $e');
     }
   }
+
+  /// Completes sign-in by verifying the OTP from Supabase's phone auth.
+  /// This is the token that Supabase's own phone OTP sends (if SMS enabled),
+  /// OR we use our own WhatsApp-verified code and a custom edge function.
+  static Future<void> verifyPhoneOtp(String phone, String token) async {
+    try {
+      await _supabase.auth.verifyOTP(
+        phone: phone,
+        token: token,
+        type: OtpType.sms,
+      );
+    } on AuthException catch (e) {
+      throw Exception(_friendlyAuthMessage(e));
+    } catch (e) {
+      throw Exception('Invalid or expired code. Please try again.');
+    }
+  }
+
+  // ── Email / Password (for workers: riders and admins) ────────────────────
 
   static Future<void> signIn({
     required String identifier,
     required String password,
   }) async {
     try {
-      // Resolve identifier (Name, Phone, or Email) to Email using RPC
       final response = await _supabase.rpc(
         'get_email_by_identifier',
         params: {'p_identifier': identifier.trim()},
@@ -202,7 +218,6 @@ class AuthService {
       );
       await _supabase.auth.updateUser(attributes);
 
-      // Update profiles table too
       final user = _supabase.auth.currentUser;
       if (user != null) {
         final updates = <String, dynamic>{};
@@ -219,5 +234,14 @@ class AuthService {
 
   static Future<void> signOut() async {
     await _supabase.auth.signOut();
+  }
+
+  static Future<void> signOutAndClear(WidgetRef ref) async {
+    await _supabase.auth.signOut();
+    ref.invalidate(profileProvider);
+    
+    // Attempt to invalidate other providers if they are loaded.
+    // Instead of importing all of them and causing circular dependencies,
+    // we can just call them locally in the UI, or import them here.
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -69,7 +70,9 @@ class _AdminRidersState extends State<AdminRiders> {
                       color: Colors.grey[100],
                       image: pickedImage != null
                           ? DecorationImage(
-                              image: FileImage(File(pickedImage!.path)),
+                              image: kIsWeb
+                                  ? NetworkImage(pickedImage!.path) as ImageProvider
+                                  : FileImage(File(pickedImage!.path)),
                               fit: BoxFit.cover,
                             )
                           : null,
@@ -148,7 +151,7 @@ class _AdminRidersState extends State<AdminRiders> {
                           throw Exception(data['error']);
                         }
 
-                        final newRiderId = data['id'] as String;
+                        final newRiderId = data['user_id'] as String;
 
                         // Upload image if picked
                         if (pickedImage != null) {
@@ -245,7 +248,9 @@ class _AdminRidersState extends State<AdminRiders> {
                       color: Colors.grey[100],
                       image: pickedImage != null
                           ? DecorationImage(
-                              image: FileImage(File(pickedImage!.path)),
+                              image: kIsWeb
+                                  ? NetworkImage(pickedImage!.path) as ImageProvider
+                                  : FileImage(File(pickedImage!.path)),
                               fit: BoxFit.cover,
                             )
                           : rider['avatar_url'] != null

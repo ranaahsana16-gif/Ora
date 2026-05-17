@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Profile {
   final String id;
   final String role;
@@ -548,12 +550,20 @@ class AppSettings {
   final double taxPercentage;
   final double discountPercentage;
   final double deliveryFee;
+  final String? openingTime;
+  final String? closingTime;
+  final bool isShopOpen;
+  final bool isAutoTiming;
 
   const AppSettings({
     required this.id,
     required this.taxPercentage,
     required this.discountPercentage,
     required this.deliveryFee,
+    this.openingTime,
+    this.closingTime,
+    this.isShopOpen = true,
+    this.isAutoTiming = false,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
@@ -562,6 +572,10 @@ class AppSettings {
       taxPercentage: (json['tax_percentage'] as num).toDouble(),
       discountPercentage: (json['discount_percentage'] as num).toDouble(),
       deliveryFee: (json['delivery_fee'] as num).toDouble(),
+      openingTime: json['opening_time'] as String?,
+      closingTime: json['closing_time'] as String?,
+      isShopOpen: json['is_shop_open'] as bool? ?? true,
+      isAutoTiming: json['is_auto_timing'] as bool? ?? false,
     );
   }
 
@@ -570,7 +584,45 @@ class AppSettings {
     'tax_percentage': taxPercentage,
     'discount_percentage': discountPercentage,
     'delivery_fee': deliveryFee,
+    if (openingTime != null) 'opening_time': openingTime,
+    if (closingTime != null) 'closing_time': closingTime,
+    'is_shop_open': isShopOpen,
+    'is_auto_timing': isAutoTiming,
   };
+
+  bool get isCurrentlyOpen {
+    if (isAutoTiming) {
+      if (openingTime != null && closingTime != null) {
+        final now = TimeOfDay.now();
+        
+        // Parse "HH:mm:ss" into TimeOfDay
+        final openParts = openingTime!.split(':');
+        final closeParts = closingTime!.split(':');
+        
+        if (openParts.length >= 2 && closeParts.length >= 2) {
+          final openTime = TimeOfDay(hour: int.parse(openParts[0]), minute: int.parse(openParts[1]));
+          final closeTime = TimeOfDay(hour: int.parse(closeParts[0]), minute: int.parse(closeParts[1]));
+          
+          final nowMinutes = now.hour * 60 + now.minute;
+          final openMinutes = openTime.hour * 60 + openTime.minute;
+          final closeMinutes = closeTime.hour * 60 + closeTime.minute;
+          
+          if (openMinutes < closeMinutes) {
+            // Standard day (e.g. 09:00 to 22:00)
+            return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
+          } else {
+            // Crosses midnight (e.g. 20:00 to 02:00)
+            return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
+          }
+        }
+      }
+      
+      // If no specific times are set under auto mode, default to open
+      return true;
+    } else {
+      return isShopOpen;
+    }
+  }
 }
 
 class Area {
@@ -607,5 +659,47 @@ class Area {
     'delivery_fee': deliveryFee,
     'estimated_delivery_time': estimatedDeliveryTime,
     'is_active': isActive,
+  };
+}
+
+class AppNotification {
+  final String id;
+  final String userId;
+  final String? orderId;
+  final String title;
+  final String body;
+  final bool isRead;
+  final DateTime createdAt;
+
+  const AppNotification({
+    required this.id,
+    required this.userId,
+    this.orderId,
+    required this.title,
+    required this.body,
+    required this.isRead,
+    required this.createdAt,
+  });
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
+    return AppNotification(
+      id: json['id'] as String,
+      userId: json['user_id'] as String,
+      orderId: json['order_id'] as String?,
+      title: json['title'] as String,
+      body: json['body'] as String,
+      isRead: json['is_read'] as bool? ?? false,
+      createdAt: DateTime.parse(json['created_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'user_id': userId,
+    'order_id': orderId,
+    'title': title,
+    'body': body,
+    'is_read': isRead,
+    'created_at': createdAt.toIso8601String(),
   };
 }

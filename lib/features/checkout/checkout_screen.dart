@@ -36,6 +36,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final settings = ref.read(settingsProvider).valueOrNull;
+      if (settings != null && !settings.isCurrentlyOpen) {
+        context.showOraSnackBar('The store is currently closed.', isError: true);
+        context.go('/');
+        return;
+      }
+
       final profile = ref.read(profileProvider).valueOrNull;
       if (profile != null) {
         _nameC.text = profile.fullName ?? '';
@@ -103,6 +110,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         'Please select your location from the home page',
         isError: true,
       );
+      return;
+    }
+
+    // Strict timing check
+    AppSettings? currentSettings = ref.read(settingsProvider).valueOrNull;
+    if (currentSettings == null) {
+      final res = await _supabase.from('app_settings').select().eq('id', 1).maybeSingle();
+      if (res != null) {
+        currentSettings = AppSettings.fromJson(res);
+      }
+    }
+    if (!mounted) return;
+    if (currentSettings != null && !currentSettings.isCurrentlyOpen) {
+      context.showOraSnackBar('The store is currently closed. We cannot accept orders right now.', isError: true);
+      context.go('/');
       return;
     }
 
@@ -223,6 +245,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<AppSettings>>(settingsProvider, (previous, next) {
+      final s = next.valueOrNull;
+      if (s != null && !s.isCurrentlyOpen) {
+        context.showOraSnackBar('The store is currently closed.', isError: true);
+        context.go('/');
+      }
+    });
+
     final subtotal = ref.watch(cartTotalProvider);
     final settingsAsync = ref.watch(settingsProvider);
     final settings = settingsAsync.valueOrNull;

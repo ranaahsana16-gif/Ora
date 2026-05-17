@@ -7,15 +7,21 @@ import 'package:ora/core/extensions/context_extensions.dart';
 import 'package:ora/features/auth/auth_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ora/features/menu/menu_provider.dart';
+import 'package:ora/features/orders/orders_screen.dart';
+import 'package:ora/features/profile/address_provider.dart';
+import 'package:ora/features/wishlist/wishlist_provider.dart';
+
 final _supabase = Supabase.instance.client;
 
-class RiderDashboard extends StatefulWidget {
+class RiderDashboard extends ConsumerStatefulWidget {
   const RiderDashboard({super.key});
   @override
-  State<RiderDashboard> createState() => _RiderDashboardState();
+  ConsumerState<RiderDashboard> createState() => _RiderDashboardState();
 }
 
-class _RiderDashboardState extends State<RiderDashboard>
+class _RiderDashboardState extends ConsumerState<RiderDashboard>
     with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> _orders = [];
   bool _loading = true;
@@ -106,6 +112,11 @@ class _RiderDashboardState extends State<RiderDashboard>
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
               await AuthService.signOut();
+              ref.invalidate(profileProvider);
+              ref.invalidate(cartProvider);
+              ref.invalidate(ordersProvider);
+              ref.invalidate(addressProvider);
+              ref.invalidate(wishlistProvider);
               if (context.mounted) context.go('/login');
             },
           ),

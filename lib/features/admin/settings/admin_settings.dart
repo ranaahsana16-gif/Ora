@@ -16,6 +16,11 @@ class _AdminSettingsState extends State<AdminSettings> {
   final _taxC = TextEditingController();
   final _discountC = TextEditingController();
   final _deliveryFeeC = TextEditingController();
+  
+  bool _isShopOpen = true;
+  bool _isAutoTiming = false;
+  TimeOfDay? _openingTime;
+  TimeOfDay? _closingTime;
 
   bool _loading = true;
   bool _saving = false;
@@ -33,6 +38,22 @@ class _AdminSettingsState extends State<AdminSettings> {
     _deliveryFeeC.dispose();
     super.dispose();
   }
+  
+  TimeOfDay? _parseTime(String? timeStr) {
+    if (timeStr == null || timeStr.isEmpty) return null;
+    final parts = timeStr.split(':');
+    if (parts.length >= 2) {
+      return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+    }
+    return null;
+  }
+  
+  String? _formatTime(TimeOfDay? time) {
+    if (time == null) return null;
+    final h = time.hour.toString().padLeft(2, '0');
+    final m = time.minute.toString().padLeft(2, '0');
+    return '$h:$m:00';
+  }
 
   Future<void> _load() async {
     try {
@@ -40,6 +61,11 @@ class _AdminSettingsState extends State<AdminSettings> {
       _taxC.text = '${data['tax_percentage']}';
       _discountC.text = '${data['discount_percentage']}';
       _deliveryFeeC.text = '${data['delivery_fee']}';
+      
+      _isShopOpen = data['is_shop_open'] ?? true;
+      _isAutoTiming = data['is_auto_timing'] ?? false;
+      _openingTime = _parseTime(data['opening_time']);
+      _closingTime = _parseTime(data['closing_time']);
     } catch (e) {
       // If no row exists, we leave fields empty
     } finally {
@@ -59,6 +85,10 @@ class _AdminSettingsState extends State<AdminSettings> {
         'tax_percentage': tax,
         'discount_percentage': discount,
         'delivery_fee': delivery,
+        'is_shop_open': _isShopOpen,
+        'is_auto_timing': _isAutoTiming,
+        if (_openingTime != null) 'opening_time': _formatTime(_openingTime),
+        if (_closingTime != null) 'closing_time': _formatTime(_closingTime),
         'updated_at': DateTime.now().toIso8601String(),
       });
 
@@ -125,10 +155,74 @@ class _AdminSettingsState extends State<AdminSettings> {
             padding: const EdgeInsets.all(16),
             children: [
               const Text(
-                'Configure global rates that apply to all orders.',
-                style: TextStyle(color: Colors.grey),
+                'Shop Operational Hours',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                ),
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      title: const Text('Automatic Timing Mode', style: TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: const Text('Let the system open and close the shop automatically on schedule.'),
+                      value: _isAutoTiming,
+                      activeThumbColor: Colors.deepOrange,
+                      onChanged: (val) {
+                        setState(() => _isAutoTiming = val);
+                      },
+                    ),
+                    const Divider(height: 1),
+                    if (!_isAutoTiming)
+                      SwitchListTile(
+                        title: const Text('Store is Open (Manual Override)', style: TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: const Text('Direct manual control. Turn off to manually close the store.'),
+                        value: _isShopOpen,
+                        activeThumbColor: Colors.green,
+                        onChanged: (val) {
+                          setState(() => _isShopOpen = val);
+                        },
+                      )
+                    else ...[
+                      ListTile(
+                        title: const Text('Opening Time'),
+                        subtitle: Text(_openingTime?.format(context) ?? 'Not Set'),
+                        trailing: const Icon(Icons.access_time),
+                        onTap: () async {
+                          final t = await showTimePicker(
+                            context: context,
+                            initialTime: _openingTime ?? const TimeOfDay(hour: 9, minute: 0),
+                          );
+                          if (t != null) setState(() => _openingTime = t);
+                        },
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        title: const Text('Closing Time'),
+                        subtitle: Text(_closingTime?.format(context) ?? 'Not Set'),
+                        trailing: const Icon(Icons.access_time),
+                        onTap: () async {
+                          final t = await showTimePicker(
+                            context: context,
+                            initialTime: _closingTime ?? const TimeOfDay(hour: 22, minute: 0),
+                          );
+                          if (t != null) setState(() => _closingTime = t);
+                        },
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'Global Rates',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
               OraInput(
                 controller: _taxC,
                 label: 'Tax Rate (%)',

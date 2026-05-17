@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ora/core/theme/app_theme.dart';
 import 'package:ora/features/auth/auth_provider.dart';
+import 'package:ora/features/notifications/notifications_provider.dart';
 import 'package:ora/shared/widgets/ora_widgets.dart';
-
+import 'package:ora/features/menu/menu_provider.dart';
+import 'package:ora/features/orders/orders_screen.dart';
+import 'package:ora/features/profile/address_provider.dart';
+import 'package:ora/features/wishlist/wishlist_provider.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -103,6 +107,9 @@ class ProfileScreen extends ConsumerWidget {
                       label: 'My Wishlist',
                       onTap: () => context.go('/wishlist'),
                     ),
+                    _NotificationsTile(
+                      onTap: () => context.go('/notifications'),
+                    ),
                     _ProfileTile(
                       icon: Icons.location_on_outlined,
                       label: 'Saved Addresses',
@@ -132,6 +139,11 @@ class ProfileScreen extends ConsumerWidget {
                       icon: Icons.logout,
                       onPressed: () async {
                         await AuthService.signOut();
+                        ref.invalidate(profileProvider);
+                        ref.invalidate(cartProvider);
+                        ref.invalidate(ordersProvider);
+                        ref.invalidate(addressProvider);
+                        ref.invalidate(wishlistProvider);
                         if (context.mounted) context.go('/login');
                       },
                     ),
@@ -207,6 +219,109 @@ class _ProfileTileState extends State<_ProfileTile> {
                 Text(
                   widget.label,
                   style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: OraTheme.textMuted,
+                  size: 22,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationsTile extends ConsumerStatefulWidget {
+  final VoidCallback onTap;
+  const _NotificationsTile({required this.onTap});
+
+  @override
+  ConsumerState<_NotificationsTile> createState() =>
+      _NotificationsTileState();
+}
+
+class _NotificationsTileState extends ConsumerState<_NotificationsTile> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: _hovered
+                  ? Colors.black.withValues(alpha: 0.03)
+                  : OraTheme.cardLight,
+              border: Border.all(
+                color: Colors.black
+                    .withValues(alpha: _hovered ? 0.08 : 0.04),
+              ),
+            ),
+            child: Row(
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: OraTheme.primaryOrange.withValues(alpha: 0.1),
+                      ),
+                      child: Icon(
+                        Icons.notifications_none_rounded,
+                        color: OraTheme.primaryOrange,
+                        size: 20,
+                      ),
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        top: -4,
+                        right: -4,
+                        child: Container(
+                          width: 18,
+                          height: 18,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFE31837),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              unreadCount > 9 ? '9+' : '$unreadCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 14),
+                const Text(
+                  'Notifications',
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),

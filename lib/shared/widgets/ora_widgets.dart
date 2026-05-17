@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ora/core/theme/app_theme.dart';
 
 /// Glossy glass card with frosted background effect
@@ -38,6 +39,7 @@ class OraButton extends StatelessWidget {
   final bool isLoading;
   final bool expand;
   final IconData? icon;
+  final Color? color;
 
   const OraButton({
     super.key,
@@ -46,27 +48,36 @@ class OraButton extends StatelessWidget {
     this.isLoading = false,
     this.expand = true,
     this.icon,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = onPressed == null;
+    final buttonColor = color ?? OraTheme.primaryOrange;
+    
     return Container(
       width: expand ? double.infinity : null,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        gradient: onPressed != null ? OraTheme.primaryGradient : null,
-        boxShadow: onPressed != null
-            ? [
+        gradient: isDisabled
+            ? null
+            : (color == null ? OraTheme.primaryGradient : null),
+        color: isDisabled
+            ? OraTheme.cardLight
+            : color,
+        boxShadow: isDisabled
+            ? null
+            : [
                 BoxShadow(
-                  color: OraTheme.primaryOrange.withValues(alpha: 0.3),
+                  color: buttonColor.withValues(alpha: 0.3),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
-              ]
-            : null,
+              ],
       ),
       child: Material(
-        color: onPressed != null ? Colors.transparent : OraTheme.cardLight,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: isLoading ? null : onPressed,
@@ -90,13 +101,17 @@ class OraButton extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (icon != null) ...[
-                          Icon(icon, size: 20, color: Colors.white),
+                          Icon(
+                            icon,
+                            size: 20,
+                            color: isDisabled ? OraTheme.textMuted : Colors.white,
+                          ),
                           const SizedBox(width: 10),
                         ],
                         Text(
                           label,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: isDisabled ? OraTheme.textMuted : Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -116,11 +131,15 @@ class OraInput extends StatelessWidget {
   final String? label;
   final String? hint;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final bool obscureText;
   final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
   final IconData? prefixIcon;
   final Widget? suffix;
   final String? Function(String?)? validator;
+  final void Function(String)? onFieldSubmitted;
+  final List<TextInputFormatter>? inputFormatters;
   final int maxLines;
 
   const OraInput({
@@ -128,11 +147,15 @@ class OraInput extends StatelessWidget {
     this.label,
     this.hint,
     this.controller,
+    this.focusNode,
     this.obscureText = false,
     this.keyboardType,
+    this.textInputAction,
     this.prefixIcon,
     this.suffix,
     this.validator,
+    this.onFieldSubmitted,
+    this.inputFormatters,
     this.maxLines = 1,
   });
 
@@ -140,9 +163,13 @@ class OraInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
       validator: validator,
+      onFieldSubmitted: onFieldSubmitted,
+      inputFormatters: inputFormatters,
       maxLines: maxLines,
       style: const TextStyle(color: OraTheme.textPrimary, fontSize: 15),
       decoration: InputDecoration(

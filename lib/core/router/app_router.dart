@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:convert';
 
 import 'package:ora/features/auth/login_screen.dart';
-import 'package:ora/features/auth/signup_screen.dart';
+import 'package:ora/features/auth/complete_profile_screen.dart';
 import 'package:ora/features/menu/menu_screen.dart';
 import 'package:ora/features/orders/orders_screen.dart';
 import 'package:ora/features/orders/order_detail_screen.dart';
@@ -28,6 +28,7 @@ import 'package:ora/features/rider/rider_dashboard.dart';
 import 'package:ora/features/wishlist/wishlist_screen.dart';
 import 'package:ora/features/profile/address_list_screen.dart';
 import 'package:ora/features/profile/address_form_screen.dart';
+import 'package:ora/features/notifications/notifications_screen.dart';
 import 'package:ora/data/models/models.dart';
 import 'package:ora/shared/widgets/ora_scaffold.dart';
 
@@ -44,7 +45,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final session = _supabase.auth.currentSession;
       final isLoggedIn = session != null;
       final loc = state.matchedLocation;
-      final isAuthRoute = loc == '/login' || loc == '/signup';
 
       // Routes that require authentication
       const protectedRoutes = [
@@ -52,8 +52,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/orders',
         '/profile',
         '/wishlist',
+        '/notifications',
         '/admin',
         '/rider',
+        '/complete-profile',
       ];
 
       final isProtected = protectedRoutes.any((r) => loc.startsWith(r));
@@ -63,8 +65,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login?redirect=${Uri.encodeComponent(loc)}';
       }
 
-      // If logged in and on auth page, go home (unless they have a redirect param)
-      if (isLoggedIn && isAuthRoute) {
+      // If logged in and on auth page (but not complete-profile), go home
+      if (isLoggedIn && loc == '/login') {
         final redirect = state.uri.queryParameters['redirect'];
         if (redirect != null && redirect.isNotEmpty) {
           return Uri.decodeComponent(redirect);
@@ -75,19 +77,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      // Auth routes (no shell)
+      // ── Auth routes (no shell) ──────────────────────────────────────────
       GoRoute(
         path: '/login',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: '/signup',
+        path: '/complete-profile',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const SignupScreen(),
+        builder: (context, state) => const CompleteProfileScreen(),
       ),
 
-      // Customer shell (web header)
+      // ── Customer shell (web header + bottom nav) ────────────────────────
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) =>
@@ -132,10 +134,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/profile/edit',
             builder: (context, state) => const EditProfileScreen(),
           ),
+          GoRoute(
+            path: '/notifications',
+            builder: (context, state) => const NotificationsScreen(),
+          ),
         ],
       ),
 
-      // Admin routes
+      // ── Admin routes ────────────────────────────────────────────────────
       ShellRoute(
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state, child) => AdminShell(child: child),
@@ -165,14 +171,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               var product = state.extra as Map<String, dynamic>?;
 
-              // Fallback to query parameter for persistence/browser refresh
               final queryProd = state.uri.queryParameters['product'];
               if (product == null && queryProd != null) {
                 try {
                   product = jsonDecode(queryProd) as Map<String, dynamic>;
-                } catch (_) {
-                  // Ignore parse errors
-                }
+                } catch (_) {}
               }
 
               return AdminProductForm(initialProduct: product);
@@ -202,7 +205,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // Rider routes
+      // ── Rider routes ────────────────────────────────────────────────────
       GoRoute(
         path: '/rider',
         parentNavigatorKey: _rootNavigatorKey,
