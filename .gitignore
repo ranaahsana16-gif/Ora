@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# WhatsApp Server related
+/whatsapp-server/node_modules/
+/whatsapp-server/.env
+/whatsapp-server/.wwebjs_auth/
+/whatsapp-server/.wwebjs_cache/
+
