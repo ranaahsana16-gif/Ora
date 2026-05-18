@@ -130,7 +130,7 @@ class ProfileScreen extends ConsumerWidget {
                     _ProfileTile(
                       icon: Icons.info_outline,
                       label: 'About Ora',
-                      onTap: () {},
+                      onTap: () => context.push('/about'),
                     ),
                     const SizedBox(height: 24),
 

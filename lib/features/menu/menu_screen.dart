@@ -6,7 +6,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ora/core/theme/app_theme.dart';
 import 'package:ora/features/menu/menu_provider.dart';
 import 'package:ora/features/menu/product_popup.dart';
-import 'package:ora/features/menu/cart_sheet.dart';
 import 'package:ora/features/wishlist/wishlist_provider.dart';
 import 'package:ora/data/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,6 +15,8 @@ import 'package:ora/features/location/location_provider.dart';
 import 'package:ora/features/location/location_dialog.dart';
 import 'package:ora/shared/widgets/floating_cart_bar.dart';
 import 'package:ora/features/settings/settings_provider.dart';
+import 'package:ora/shared/widgets/global_footer.dart';
+import 'package:ora/features/notifications/notifications_provider.dart';
 
 class MenuScreen extends ConsumerStatefulWidget {
   const MenuScreen({super.key});
@@ -129,7 +130,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     final categoriesAsync = ref.watch(categoriesProvider);
     final productsAsync = ref.watch(productsProvider);
     final bannersAsync = ref.watch(bannersProvider);
-    final cartCount = ref.watch(cartItemCountProvider);
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
     final isMobile = MediaQuery.sizeOf(context).width <= 600;
     final settingsAsync = ref.watch(settingsProvider);
     final isShopOpen = settingsAsync.valueOrNull?.isCurrentlyOpen ?? true;
@@ -222,6 +223,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
+                                            const SizedBox(width: 4),
                                             const Icon(
                                               Icons.keyboard_arrow_down,
                                               color: Colors.grey,
@@ -278,18 +280,11 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                           },
                         ),
                       ),
-                      // Cart button
+                      // Notifications button
                       _MobileHeaderIcon(
-                        icon: Icons.shopping_bag_outlined,
-                        badge: cartCount,
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (_) => const CartSheet(),
-                          );
-                        },
+                        icon: Icons.notifications_none_rounded,
+                        badge: unreadCount,
+                        onTap: () => context.push('/notifications'),
                       ),
                       const SizedBox(width: 6),
                       // Profile / Login button
@@ -632,6 +627,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
     // Bottom spacing
     slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 100)));
+
+    // Global Footer
+    slivers.add(const SliverToBoxAdapter(child: GlobalFooter()));
     return slivers;
   }
 }

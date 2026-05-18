@@ -284,6 +284,7 @@ class AppOrder {
   final String? notes;
   final DateTime createdAt;
   final List<OrderItem>? items;
+  final Profile? rider;
 
   const AppOrder({
     required this.id,
@@ -301,6 +302,7 @@ class AppOrder {
     this.notes,
     required this.createdAt,
     this.items,
+    this.rider,
   });
 
   factory AppOrder.fromJson(Map<String, dynamic> json) {
@@ -323,6 +325,9 @@ class AppOrder {
           ? (json['order_items'] as List)
                 .map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
                 .toList()
+          : null,
+      rider: json['rider'] != null
+          ? Profile.fromJson(json['rider'] as Map<String, dynamic>)
           : null,
     );
   }
@@ -554,6 +559,16 @@ class AppSettings {
   final String? closingTime;
   final bool isShopOpen;
   final bool isAutoTiming;
+  final String? storeName;
+  final String? shortDescription;
+  final String? operatingDays;
+  final String? socialMediaUrl; // Kept for backward compatibility if needed
+  final String? phone;
+  final String? email;
+  final String? facebookUrl;
+  final String? instagramUrl;
+  final String? tiktokUrl;
+  final String? youtubeUrl;
 
   const AppSettings({
     required this.id,
@@ -564,6 +579,16 @@ class AppSettings {
     this.closingTime,
     this.isShopOpen = true,
     this.isAutoTiming = false,
+    this.storeName,
+    this.shortDescription,
+    this.operatingDays,
+    this.socialMediaUrl,
+    this.phone,
+    this.email,
+    this.facebookUrl,
+    this.instagramUrl,
+    this.tiktokUrl,
+    this.youtubeUrl,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
@@ -576,6 +601,16 @@ class AppSettings {
       closingTime: json['closing_time'] as String?,
       isShopOpen: json['is_shop_open'] as bool? ?? true,
       isAutoTiming: json['is_auto_timing'] as bool? ?? false,
+      storeName: json['store_name'] as String?,
+      shortDescription: json['short_description'] as String?,
+      operatingDays: json['operating_days'] as String?,
+      socialMediaUrl: json['social_media_url'] as String?,
+      phone: json['phone'] as String?,
+      email: json['email'] as String?,
+      facebookUrl: json['facebook_url'] as String?,
+      instagramUrl: json['instagram_url'] as String?,
+      tiktokUrl: json['tiktok_url'] as String?,
+      youtubeUrl: json['youtube_url'] as String?,
     );
   }
 
@@ -588,6 +623,10 @@ class AppSettings {
     if (closingTime != null) 'closing_time': closingTime,
     'is_shop_open': isShopOpen,
     'is_auto_timing': isAutoTiming,
+    'store_name': storeName,
+    'short_description': shortDescription,
+    'operating_days': operatingDays,
+    'social_media_url': socialMediaUrl,
   };
 
   bool get isCurrentlyOpen {

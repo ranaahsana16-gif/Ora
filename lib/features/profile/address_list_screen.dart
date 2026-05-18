@@ -76,79 +76,173 @@ class _AddressTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: OraTheme.cardLight,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
         border: Border.all(
           color: address.isDefault
               ? OraTheme.primaryOrange.withValues(alpha: 0.3)
               : Colors.black.withValues(alpha: 0.05),
+          width: address.isDefault ? 2 : 1,
         ),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        title: Row(
-          children: [
-            Text(
-              address.label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            if (address.isDefault) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: OraTheme.primaryOrange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  'DEFAULT',
-                  style: TextStyle(
-                    color: OraTheme.primaryOrange,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: address.isDefault
+                        ? OraTheme.primaryOrange.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    address.label.toLowerCase() == 'home'
+                        ? Icons.home_rounded
+                        : address.label.toLowerCase() == 'work'
+                            ? Icons.work_rounded
+                            : Icons.location_on_rounded,
+                    color: address.isDefault ? OraTheme.primaryOrange : Colors.grey[700],
+                    size: 24,
                   ),
                 ),
-              ),
-            ],
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text('${address.fullName} • ${address.phone}'),
-            const SizedBox(height: 4),
-            Text(
-              '${address.house}, ${address.street}${address.block != null ? ', ${address.block}' : ''}, ${address.area}, ${address.city}',
-              style: TextStyle(color: OraTheme.textSecondary, fontSize: 13),
+                const SizedBox(width: 16),
+                
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            address.label.toUpperCase(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          if (address.isDefault) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: OraTheme.primaryOrange,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.star_rounded, color: Colors.white, size: 10),
+                                  SizedBox(width: 2),
+                                  Text(
+                                    'DEFAULT',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${address.fullName} • ${address.phone}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${address.house}, ${address.street}${address.block != null ? ', ${address.block}' : ''}, ${address.area}, ${address.city}',
+                        style: TextStyle(
+                          color: OraTheme.textSecondary,
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Menu
+                const SizedBox(width: 8),
+              ],
             ),
-          ],
-        ),
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert_rounded),
-          onSelected: (val) {
-            if (val == 'edit') {
-              context.push('/profile/addresses/edit', extra: address);
-            } else if (val == 'delete') {
-              ref.read(addressProvider.notifier).deleteAddress(address.id);
-            } else if (val == 'default') {
-              ref.read(addressProvider.notifier).setDefault(address.id);
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(value: 'edit', child: Text('Edit')),
-            const PopupMenuItem(
-              value: 'default',
-              child: Text('Set as Default'),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded, color: Colors.grey),
+              splashRadius: 20,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              onSelected: (val) {
+                if (val == 'edit') {
+                  context.push('/profile/addresses/edit', extra: address);
+                } else if (val == 'delete') {
+                  ref.read(addressProvider.notifier).deleteAddress(address.id);
+                } else if (val == 'default') {
+                  ref.read(addressProvider.notifier).setDefault(address.id);
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_rounded, size: 18),
+                      SizedBox(width: 8),
+                      Text('Edit'),
+                    ],
+                  ),
+                ),
+                if (!address.isDefault)
+                  const PopupMenuItem(
+                    value: 'default',
+                    child: Row(
+                      children: [
+                        Icon(Icons.star_outline_rounded, size: 18),
+                        SizedBox(width: 8),
+                        Text('Set as Default'),
+                      ],
+                    ),
+                  ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline_rounded, color: OraTheme.error, size: 18),
+                      SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: OraTheme.error)),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const PopupMenuItem(
-              value: 'delete',
-              child: Text('Delete', style: TextStyle(color: OraTheme.error)),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

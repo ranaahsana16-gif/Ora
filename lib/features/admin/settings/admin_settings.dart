@@ -17,6 +17,18 @@ class _AdminSettingsState extends State<AdminSettings> {
   final _discountC = TextEditingController();
   final _deliveryFeeC = TextEditingController();
   
+  final _storeNameC = TextEditingController();
+  final _shortDescC = TextEditingController();
+  final _operatingDaysC = TextEditingController();
+  final _socialUrlC = TextEditingController();
+  
+  final _phoneC = TextEditingController();
+  final _emailC = TextEditingController();
+  final _facebookC = TextEditingController();
+  final _instagramC = TextEditingController();
+  final _tiktokC = TextEditingController();
+  final _youtubeC = TextEditingController();
+  
   bool _isShopOpen = true;
   bool _isAutoTiming = false;
   TimeOfDay? _openingTime;
@@ -36,6 +48,16 @@ class _AdminSettingsState extends State<AdminSettings> {
     _taxC.dispose();
     _discountC.dispose();
     _deliveryFeeC.dispose();
+    _storeNameC.dispose();
+    _shortDescC.dispose();
+    _operatingDaysC.dispose();
+    _socialUrlC.dispose();
+    _phoneC.dispose();
+    _emailC.dispose();
+    _facebookC.dispose();
+    _instagramC.dispose();
+    _tiktokC.dispose();
+    _youtubeC.dispose();
     super.dispose();
   }
   
@@ -61,6 +83,16 @@ class _AdminSettingsState extends State<AdminSettings> {
       _taxC.text = '${data['tax_percentage']}';
       _discountC.text = '${data['discount_percentage']}';
       _deliveryFeeC.text = '${data['delivery_fee']}';
+      _storeNameC.text = data['store_name'] ?? 'Ora';
+      _shortDescC.text = data['short_description'] ?? 'Your favorite food, delivered fast.';
+      _operatingDaysC.text = data['operating_days'] ?? 'Monday to Sunday';
+      _socialUrlC.text = data['social_media_url'] ?? '';
+      _phoneC.text = data['phone'] ?? '';
+      _emailC.text = data['email'] ?? '';
+      _facebookC.text = data['facebook_url'] ?? '';
+      _instagramC.text = data['instagram_url'] ?? '';
+      _tiktokC.text = data['tiktok_url'] ?? '';
+      _youtubeC.text = data['youtube_url'] ?? '';
       
       _isShopOpen = data['is_shop_open'] ?? true;
       _isAutoTiming = data['is_auto_timing'] ?? false;
@@ -89,6 +121,16 @@ class _AdminSettingsState extends State<AdminSettings> {
         'is_auto_timing': _isAutoTiming,
         if (_openingTime != null) 'opening_time': _formatTime(_openingTime),
         if (_closingTime != null) 'closing_time': _formatTime(_closingTime),
+        'store_name': _storeNameC.text,
+        'short_description': _shortDescC.text,
+        'operating_days': _operatingDaysC.text,
+        'social_media_url': _socialUrlC.text,
+        'phone': _phoneC.text,
+        'email': _emailC.text,
+        'facebook_url': _facebookC.text,
+        'instagram_url': _instagramC.text,
+        'tiktok_url': _tiktokC.text,
+        'youtube_url': _youtubeC.text,
         'updated_at': DateTime.now().toIso8601String(),
       });
 
@@ -244,6 +286,70 @@ class _AdminSettingsState extends State<AdminSettings> {
                 prefixIcon: Icons.delivery_dining,
               ),
 
+              const SizedBox(height: 32),
+              const Text(
+                'Footer & Brand Settings',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              OraInput(
+                controller: _storeNameC,
+                label: 'Store Name',
+                prefixIcon: Icons.storefront_outlined,
+              ),
+              const SizedBox(height: 16),
+              OraInput(
+                controller: _shortDescC,
+                label: 'Short Description',
+                prefixIcon: Icons.description_outlined,
+              ),
+              const SizedBox(height: 16),
+              OraInput(
+                controller: _operatingDaysC,
+                label: 'Operating Days (e.g., Monday to Sunday)',
+                prefixIcon: Icons.calendar_today_outlined,
+              ),
+              const SizedBox(height: 16),
+              OraInput(
+                controller: _phoneC,
+                label: 'Phone Number',
+                prefixIcon: Icons.phone_outlined,
+              ),
+              const SizedBox(height: 16),
+              OraInput(
+                controller: _emailC,
+                label: 'Email Address',
+                prefixIcon: Icons.email_outlined,
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'Social Media Links',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              OraInput(
+                controller: _facebookC,
+                label: 'Facebook URL',
+                prefixIcon: Icons.facebook,
+              ),
+              const SizedBox(height: 16),
+              OraInput(
+                controller: _instagramC,
+                label: 'Instagram URL',
+                prefixIcon: Icons.camera_alt_outlined,
+              ),
+              const SizedBox(height: 16),
+              OraInput(
+                controller: _tiktokC,
+                label: 'TikTok URL',
+                prefixIcon: Icons.music_note_outlined,
+              ),
+              const SizedBox(height: 16),
+              OraInput(
+                controller: _youtubeC,
+                label: 'YouTube URL',
+                prefixIcon: Icons.play_circle_outline,
+              ),
               const SizedBox(height: 40),
             ],
           ),

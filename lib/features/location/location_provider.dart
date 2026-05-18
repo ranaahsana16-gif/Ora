@@ -54,11 +54,11 @@ class OrderLocation {
 
   String get displaySubtitle {
     if (type == 'delivery' && areaName != null) {
-      return '$areaName${cityName != null ? ", $cityName" : ""}';
+      return areaName!;
     } else if (type == 'pickup' && outletName != null) {
       return outletName!;
     }
-    return 'Select Location';
+    return 'Tap to select';
   }
 
   Map<String, dynamic> toJson() => {

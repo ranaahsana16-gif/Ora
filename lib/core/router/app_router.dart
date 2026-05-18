@@ -29,6 +29,7 @@ import 'package:ora/features/wishlist/wishlist_screen.dart';
 import 'package:ora/features/profile/address_list_screen.dart';
 import 'package:ora/features/profile/address_form_screen.dart';
 import 'package:ora/features/notifications/notifications_screen.dart';
+import 'package:ora/features/about/about_screen.dart';
 import 'package:ora/data/models/models.dart';
 import 'package:ora/shared/widgets/ora_scaffold.dart';
 
@@ -137,6 +138,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/notifications',
             builder: (context, state) => const NotificationsScreen(),
+          ),
+          GoRoute(
+            path: '/about',
+            builder: (context, state) => const AboutScreen(),
           ),
         ],
       ),

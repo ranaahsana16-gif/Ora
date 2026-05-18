@@ -46,7 +46,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     try {
       final data = await _supabase
           .from('orders')
-          .select('*, order_items(*)')
+          .select('*, order_items(*), rider:profiles!orders_rider_id_fkey(*)')
           .eq('id', widget.orderId)
           .single();
       if (mounted) {
@@ -92,7 +92,66 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    const SizedBox(height: 28),
+                    if (_order!.rider != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Rider Details',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: OraTheme.cardLight,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: OraTheme.primaryOrange.withValues(alpha: 0.1),
+                              backgroundImage: _order!.rider!.avatarUrl != null
+                                  ? NetworkImage(_order!.rider!.avatarUrl!)
+                                  : null,
+                              child: _order!.rider!.avatarUrl == null
+                                  ? const Icon(Icons.person, color: OraTheme.primaryOrange)
+                                  : null,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _order!.rider!.fullName ?? 'Your Rider',
+                                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                                  ),
+                                  if (_order!.rider!.phone != null) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _order!.rider!.phone!,
+                                      style: TextStyle(color: OraTheme.textSecondary, fontSize: 14),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.call, color: Colors.green, size: 20),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    const SizedBox(height: 12),
 
                     Text(
                       'Order #${_order!.id.substring(0, 8)}',
