@@ -55,7 +55,7 @@ class OraButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDisabled = onPressed == null;
     final buttonColor = color ?? OraTheme.primaryOrange;
-    
+
     return Container(
       width: expand ? double.infinity : null,
       decoration: BoxDecoration(
@@ -63,9 +63,7 @@ class OraButton extends StatelessWidget {
         gradient: isDisabled
             ? null
             : (color == null ? OraTheme.primaryGradient : null),
-        color: isDisabled
-            ? OraTheme.cardLight
-            : color,
+        color: isDisabled ? OraTheme.cardLight : color,
         boxShadow: isDisabled
             ? null
             : [
@@ -104,14 +102,18 @@ class OraButton extends StatelessWidget {
                           Icon(
                             icon,
                             size: 20,
-                            color: isDisabled ? OraTheme.textMuted : Colors.white,
+                            color: isDisabled
+                                ? OraTheme.textMuted
+                                : Colors.white,
                           ),
                           const SizedBox(width: 10),
                         ],
                         Text(
                           label,
                           style: TextStyle(
-                            color: isDisabled ? OraTheme.textMuted : Colors.white,
+                            color: isDisabled
+                                ? OraTheme.textMuted
+                                : Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),

@@ -633,19 +633,25 @@ class AppSettings {
     if (isAutoTiming) {
       if (openingTime != null && closingTime != null) {
         final now = TimeOfDay.now();
-        
+
         // Parse "HH:mm:ss" into TimeOfDay
         final openParts = openingTime!.split(':');
         final closeParts = closingTime!.split(':');
-        
+
         if (openParts.length >= 2 && closeParts.length >= 2) {
-          final openTime = TimeOfDay(hour: int.parse(openParts[0]), minute: int.parse(openParts[1]));
-          final closeTime = TimeOfDay(hour: int.parse(closeParts[0]), minute: int.parse(closeParts[1]));
-          
+          final openTime = TimeOfDay(
+            hour: int.parse(openParts[0]),
+            minute: int.parse(openParts[1]),
+          );
+          final closeTime = TimeOfDay(
+            hour: int.parse(closeParts[0]),
+            minute: int.parse(closeParts[1]),
+          );
+
           final nowMinutes = now.hour * 60 + now.minute;
           final openMinutes = openTime.hour * 60 + openTime.minute;
           final closeMinutes = closeTime.hour * 60 + closeTime.minute;
-          
+
           if (openMinutes < closeMinutes) {
             // Standard day (e.g. 09:00 to 22:00)
             return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
@@ -655,7 +661,7 @@ class AppSettings {
           }
         }
       }
-      
+
       // If no specific times are set under auto mode, default to open
       return true;
     } else {

@@ -118,7 +118,9 @@ class _AdminOrderDetailState extends State<AdminOrderDetail> {
     }
 
     final o = _order!;
-    final c = _customer ?? {'full_name': 'Unknown', 'phone': 'Unknown', 'id': o['user_id']};
+    final c =
+        _customer ??
+        {'full_name': 'Unknown', 'phone': 'Unknown', 'id': o['user_id']};
     final items = (o['order_items'] as List?) ?? [];
     final address = o['address'] as Map<String, dynamic>? ?? {};
 

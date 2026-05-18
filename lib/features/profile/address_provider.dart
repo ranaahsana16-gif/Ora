@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ora/data/models/models.dart';
+
 final _supabase = Supabase.instance.client;
 
 final addressProvider =

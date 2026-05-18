@@ -229,10 +229,8 @@ class _OraShellState extends ConsumerState<OraShell> {
                                 return _HeaderIconButton(
                                   icon: Icons.notifications_none_rounded,
                                   badge: unread,
-                                  onTap: () =>
-                                      context.go('/notifications'),
-                                  isActive:
-                                      loc.startsWith('/notifications'),
+                                  onTap: () => context.go('/notifications'),
+                                  isActive: loc.startsWith('/notifications'),
                                 );
                               },
                             ),
@@ -597,7 +595,9 @@ class ClosedStorefrontOverlay extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: OraTheme.primaryOrange.withValues(alpha: 0.1),
+                            color: OraTheme.primaryOrange.withValues(
+                              alpha: 0.1,
+                            ),
                             blurRadius: 30,
                             spreadRadius: 10,
                           ),
@@ -722,7 +722,9 @@ class ClosedStorefrontOverlay extends StatelessWidget {
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             decoration: TextDecoration.underline,
-                            decorationColor: Colors.white.withValues(alpha: 0.2),
+                            decorationColor: Colors.white.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                         ),
                       ),

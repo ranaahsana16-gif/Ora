@@ -16,19 +16,19 @@ class _AdminSettingsState extends State<AdminSettings> {
   final _taxC = TextEditingController();
   final _discountC = TextEditingController();
   final _deliveryFeeC = TextEditingController();
-  
+
   final _storeNameC = TextEditingController();
   final _shortDescC = TextEditingController();
   final _operatingDaysC = TextEditingController();
   final _socialUrlC = TextEditingController();
-  
+
   final _phoneC = TextEditingController();
   final _emailC = TextEditingController();
   final _facebookC = TextEditingController();
   final _instagramC = TextEditingController();
   final _tiktokC = TextEditingController();
   final _youtubeC = TextEditingController();
-  
+
   bool _isShopOpen = true;
   bool _isAutoTiming = false;
   TimeOfDay? _openingTime;
@@ -60,7 +60,7 @@ class _AdminSettingsState extends State<AdminSettings> {
     _youtubeC.dispose();
     super.dispose();
   }
-  
+
   TimeOfDay? _parseTime(String? timeStr) {
     if (timeStr == null || timeStr.isEmpty) return null;
     final parts = timeStr.split(':');
@@ -69,7 +69,7 @@ class _AdminSettingsState extends State<AdminSettings> {
     }
     return null;
   }
-  
+
   String? _formatTime(TimeOfDay? time) {
     if (time == null) return null;
     final h = time.hour.toString().padLeft(2, '0');
@@ -84,7 +84,8 @@ class _AdminSettingsState extends State<AdminSettings> {
       _discountC.text = '${data['discount_percentage']}';
       _deliveryFeeC.text = '${data['delivery_fee']}';
       _storeNameC.text = data['store_name'] ?? 'Ora';
-      _shortDescC.text = data['short_description'] ?? 'Your favorite food, delivered fast.';
+      _shortDescC.text =
+          data['short_description'] ?? 'Your favorite food, delivered fast.';
       _operatingDaysC.text = data['operating_days'] ?? 'Monday to Sunday';
       _socialUrlC.text = data['social_media_url'] ?? '';
       _phoneC.text = data['phone'] ?? '';
@@ -93,7 +94,7 @@ class _AdminSettingsState extends State<AdminSettings> {
       _instagramC.text = data['instagram_url'] ?? '';
       _tiktokC.text = data['tiktok_url'] ?? '';
       _youtubeC.text = data['youtube_url'] ?? '';
-      
+
       _isShopOpen = data['is_shop_open'] ?? true;
       _isAutoTiming = data['is_auto_timing'] ?? false;
       _openingTime = _parseTime(data['opening_time']);
@@ -205,13 +206,20 @@ class _AdminSettingsState extends State<AdminSettings> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                  border: Border.all(
+                    color: Colors.black.withValues(alpha: 0.05),
+                  ),
                 ),
                 child: Column(
                   children: [
                     SwitchListTile(
-                      title: const Text('Automatic Timing Mode', style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: const Text('Let the system open and close the shop automatically on schedule.'),
+                      title: const Text(
+                        'Automatic Timing Mode',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: const Text(
+                        'Let the system open and close the shop automatically on schedule.',
+                      ),
                       value: _isAutoTiming,
                       activeThumbColor: Colors.deepOrange,
                       onChanged: (val) {
@@ -221,8 +229,13 @@ class _AdminSettingsState extends State<AdminSettings> {
                     const Divider(height: 1),
                     if (!_isAutoTiming)
                       SwitchListTile(
-                        title: const Text('Store is Open (Manual Override)', style: TextStyle(fontWeight: FontWeight.w600)),
-                        subtitle: const Text('Direct manual control. Turn off to manually close the store.'),
+                        title: const Text(
+                          'Store is Open (Manual Override)',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          'Direct manual control. Turn off to manually close the store.',
+                        ),
                         value: _isShopOpen,
                         activeThumbColor: Colors.green,
                         onChanged: (val) {
@@ -232,12 +245,16 @@ class _AdminSettingsState extends State<AdminSettings> {
                     else ...[
                       ListTile(
                         title: const Text('Opening Time'),
-                        subtitle: Text(_openingTime?.format(context) ?? 'Not Set'),
+                        subtitle: Text(
+                          _openingTime?.format(context) ?? 'Not Set',
+                        ),
                         trailing: const Icon(Icons.access_time),
                         onTap: () async {
                           final t = await showTimePicker(
                             context: context,
-                            initialTime: _openingTime ?? const TimeOfDay(hour: 9, minute: 0),
+                            initialTime:
+                                _openingTime ??
+                                const TimeOfDay(hour: 9, minute: 0),
                           );
                           if (t != null) setState(() => _openingTime = t);
                         },
@@ -245,12 +262,16 @@ class _AdminSettingsState extends State<AdminSettings> {
                       const Divider(height: 1),
                       ListTile(
                         title: const Text('Closing Time'),
-                        subtitle: Text(_closingTime?.format(context) ?? 'Not Set'),
+                        subtitle: Text(
+                          _closingTime?.format(context) ?? 'Not Set',
+                        ),
                         trailing: const Icon(Icons.access_time),
                         onTap: () async {
                           final t = await showTimePicker(
                             context: context,
-                            initialTime: _closingTime ?? const TimeOfDay(hour: 22, minute: 0),
+                            initialTime:
+                                _closingTime ??
+                                const TimeOfDay(hour: 22, minute: 0),
                           );
                           if (t != null) setState(() => _closingTime = t);
                         },

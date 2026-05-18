@@ -71,7 +71,8 @@ class _AdminRidersState extends State<AdminRiders> {
                       image: pickedImage != null
                           ? DecorationImage(
                               image: kIsWeb
-                                  ? NetworkImage(pickedImage!.path) as ImageProvider
+                                  ? NetworkImage(pickedImage!.path)
+                                        as ImageProvider
                                   : FileImage(File(pickedImage!.path)),
                               fit: BoxFit.cover,
                             )
@@ -249,7 +250,8 @@ class _AdminRidersState extends State<AdminRiders> {
                       image: pickedImage != null
                           ? DecorationImage(
                               image: kIsWeb
-                                  ? NetworkImage(pickedImage!.path) as ImageProvider
+                                  ? NetworkImage(pickedImage!.path)
+                                        as ImageProvider
                                   : FileImage(File(pickedImage!.path)),
                               fit: BoxFit.cover,
                             )

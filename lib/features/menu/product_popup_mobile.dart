@@ -12,7 +12,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 class ProductPopupMobile extends ConsumerStatefulWidget {
   final Product product;
   final ScrollController? scrollController;
-  const ProductPopupMobile({super.key, required this.product, this.scrollController});
+  const ProductPopupMobile({
+    super.key,
+    required this.product,
+    this.scrollController,
+  });
 
   @override
   ConsumerState<ProductPopupMobile> createState() => _ProductPopupMobileState();
@@ -486,7 +490,6 @@ class _ProductPopupMobileState extends ConsumerState<ProductPopupMobile> {
     );
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mobile Helper Widgets (Unchanged)

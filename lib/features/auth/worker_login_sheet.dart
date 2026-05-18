@@ -9,6 +9,7 @@ import 'package:ora/shared/widgets/ora_widgets.dart';
 import 'package:ora/features/orders/orders_screen.dart';
 import 'package:ora/features/profile/address_provider.dart';
 import 'package:ora/features/wishlist/wishlist_provider.dart';
+
 /// Bottom sheet for riders and admins to log in with email + password.
 /// Opened by tapping the small "Worker?" link on the main login screen.
 class WorkerLoginSheet extends ConsumerStatefulWidget {
@@ -140,10 +141,7 @@ class _WorkerLoginSheetState extends ConsumerState<WorkerLoginSheet> {
                     ),
                     Text(
                       'For riders and administrators only',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: OraTheme.textMuted,
-                      ),
+                      style: TextStyle(fontSize: 12, color: OraTheme.textMuted),
                     ),
                   ],
                 ),

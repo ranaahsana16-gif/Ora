@@ -114,14 +114,16 @@ class _AddressTile extends ConsumerWidget {
                     address.label.toLowerCase() == 'home'
                         ? Icons.home_rounded
                         : address.label.toLowerCase() == 'work'
-                            ? Icons.work_rounded
-                            : Icons.location_on_rounded,
-                    color: address.isDefault ? OraTheme.primaryOrange : Colors.grey[700],
+                        ? Icons.work_rounded
+                        : Icons.location_on_rounded,
+                    color: address.isDefault
+                        ? OraTheme.primaryOrange
+                        : Colors.grey[700],
                     size: 24,
                   ),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Content
                 Expanded(
                   child: Column(
@@ -140,7 +142,10 @@ class _AddressTile extends ConsumerWidget {
                           if (address.isDefault) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: OraTheme.primaryOrange,
                                 borderRadius: BorderRadius.circular(4),
@@ -148,7 +153,11 @@ class _AddressTile extends ConsumerWidget {
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.star_rounded, color: Colors.white, size: 10),
+                                  Icon(
+                                    Icons.star_rounded,
+                                    color: Colors.white,
+                                    size: 10,
+                                  ),
                                   SizedBox(width: 2),
                                   Text(
                                     'DEFAULT',
@@ -185,7 +194,7 @@ class _AddressTile extends ConsumerWidget {
                     ],
                   ),
                 ),
-                
+
                 // Menu
                 const SizedBox(width: 8),
               ],
@@ -197,7 +206,9 @@ class _AddressTile extends ConsumerWidget {
             child: PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert_rounded, color: Colors.grey),
               splashRadius: 20,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               onSelected: (val) {
                 if (val == 'edit') {
                   context.push('/profile/addresses/edit', extra: address);
@@ -233,7 +244,11 @@ class _AddressTile extends ConsumerWidget {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline_rounded, color: OraTheme.error, size: 18),
+                      Icon(
+                        Icons.delete_outline_rounded,
+                        color: OraTheme.error,
+                        size: 18,
+                      ),
                       SizedBox(width: 8),
                       Text('Delete', style: TextStyle(color: OraTheme.error)),
                     ],

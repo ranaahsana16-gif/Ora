@@ -17,11 +17,15 @@ class WhatsAppAutostart {
     try {
       final isRunning = await _isServerRunning();
       if (isRunning) {
-        debugPrint('📱 WhatsApp Server is already running. Skipping autostart.');
+        debugPrint(
+          '📱 WhatsApp Server is already running. Skipping autostart.',
+        );
         return;
       }
 
-      debugPrint('🚀 WhatsApp Server is not running. Starting it in the background...');
+      debugPrint(
+        '🚀 WhatsApp Server is not running. Starting it in the background...',
+      );
       await _startServer();
     } catch (e) {
       debugPrint('⚠️ Error checking or starting WhatsApp Server: $e');
@@ -31,7 +35,11 @@ class WhatsAppAutostart {
   /// Checks if the WhatsApp server is running by attempting to connect to its lock port
   static Future<bool> _isServerRunning() async {
     try {
-      final socket = await Socket.connect('127.0.0.1', port, timeout: const Duration(milliseconds: 500));
+      final socket = await Socket.connect(
+        '127.0.0.1',
+        port,
+        timeout: const Duration(milliseconds: 500),
+      );
       await socket.close();
       return true;
     } catch (_) {
@@ -84,7 +92,9 @@ class WhatsAppAutostart {
         mode: ProcessStartMode.detached,
       );
 
-      debugPrint('✅ Started WhatsApp Server background process with PID: ${process.pid}');
+      debugPrint(
+        '✅ Started WhatsApp Server background process with PID: ${process.pid}',
+      );
     } catch (e) {
       debugPrint('❌ Failed to start WhatsApp Server: $e');
     }

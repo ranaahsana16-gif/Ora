@@ -568,10 +568,33 @@ class _AdminCategoriesState extends State<AdminCategories> {
                     );
                     if (confirm == true && mounted) {
                       try {
-                        // Uncategorize products first to preserve them
+                        // Create or get Uncategorized category
+                        final uncategorizedRes = await _supabase
+                            .from('categories')
+                            .select('id')
+                            .ilike('name', 'uncategorized')
+                            .limit(1);
+
+                        String fallbackId;
+                        if (uncategorizedRes.isEmpty) {
+                          final inserted = await _supabase
+                              .from('categories')
+                              .insert({
+                                'name': 'Uncategorized',
+                                'sort_order': 999,
+                                'is_active': false,
+                              })
+                              .select('id')
+                              .single();
+                          fallbackId = inserted['id'];
+                        } else {
+                          fallbackId = uncategorizedRes.first['id'];
+                        }
+
+                        // Reassign products to Uncategorized
                         await _supabase
                             .from('products')
-                            .update({'category_id': null})
+                            .update({'category_id': fallbackId})
                             .eq('category_id', cat['id']);
                         await _supabase
                             .from('products')

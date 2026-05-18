@@ -21,7 +21,8 @@ class AboutScreen extends ConsumerWidget {
     final settings = settingsAsync.valueOrNull;
 
     final storeName = settings?.storeName ?? 'Ora';
-    final description = settings?.shortDescription ??
+    final description =
+        settings?.shortDescription ??
         'Your favorite food, delivered fast and fresh directly to your door.';
     final socialUrl = settings?.socialMediaUrl;
 
@@ -88,16 +89,25 @@ class AboutScreen extends ConsumerWidget {
                       child: GestureDetector(
                         onTap: () => _launchUrl(socialUrl),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(30),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.language_rounded, color: Colors.white, size: 20),
+                              Icon(
+                                Icons.language_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                               SizedBox(width: 8),
                               Text(
                                 'Visit our Website',
@@ -121,10 +131,7 @@ class AboutScreen extends ConsumerWidget {
                 children: [
                   const Text(
                     'App Version',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -137,10 +144,7 @@ class AboutScreen extends ConsumerWidget {
                   const SizedBox(height: 32),
                   const Text(
                     'Terms & Privacy',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 16),
                   _ListTile(

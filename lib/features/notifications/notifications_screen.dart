@@ -33,18 +33,12 @@ class NotificationsScreen extends ConsumerWidget {
           children: [
             const Text(
               'Notifications',
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
             ),
             if (unreadCount > 0) ...[
               const SizedBox(width: 10),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 3,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: OraTheme.primaryOrange,
                   borderRadius: BorderRadius.circular(20),
@@ -143,9 +137,9 @@ class _EmptyNotifications extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               'All caught up!',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
@@ -170,10 +164,7 @@ class _NotificationTile extends StatefulWidget {
   final AppNotification notification;
   final VoidCallback onTap;
 
-  const _NotificationTile({
-    required this.notification,
-    required this.onTap,
-  });
+  const _NotificationTile({required this.notification, required this.onTap});
 
   @override
   State<_NotificationTile> createState() => _NotificationTileState();

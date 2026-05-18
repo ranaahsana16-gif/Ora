@@ -151,7 +151,10 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                 child: Container(
                   width: double.infinity,
                   color: OraTheme.error.withValues(alpha: 0.1),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       const Icon(
@@ -162,7 +165,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          shopTimes?.openingTime != null && shopTimes?.closingTime != null
+                          shopTimes?.openingTime != null &&
+                                  shopTimes?.closingTime != null
                               ? 'We are currently closed. Shop hours: ${shopTimes!.openingTime!.substring(0, 5)} to ${shopTimes.closingTime!.substring(0, 5)}'
                               : 'We are currently closed. Checkout is temporarily disabled.',
                           style: const TextStyle(

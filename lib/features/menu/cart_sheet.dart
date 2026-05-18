@@ -8,6 +8,7 @@ import 'package:ora/features/location/location_provider.dart';
 import 'package:ora/shared/widgets/ora_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ora/features/settings/settings_provider.dart';
+
 class CartSheet extends ConsumerWidget {
   final bool isDrawer;
   const CartSheet({super.key, this.isDrawer = false});
@@ -320,21 +321,33 @@ class CartSheet extends ConsumerWidget {
                     OraButton(
                       label: isSettingsLoading
                           ? 'Checking store status...'
-                          : (isShopOpen ? 'Proceed to Checkout' : 'Store is currently closed'),
+                          : (isShopOpen
+                                ? 'Proceed to Checkout'
+                                : 'Store is currently closed'),
                       icon: isSettingsLoading
                           ? null
-                          : (isShopOpen ? Icons.arrow_forward : Icons.lock_clock),
+                          : (isShopOpen
+                                ? Icons.arrow_forward
+                                : Icons.lock_clock),
                       color: isShopOpen ? OraTheme.primaryOrange : Colors.grey,
                       isLoading: isSettingsLoading,
-                      onPressed: (isShopOpen && !isSettingsLoading) ? () {
-                        Navigator.pop(context);
-                        final isLoggedIn = Supabase.instance.client.auth.currentSession != null;
-                        if (isLoggedIn) {
-                          context.push('/checkout');
-                        } else {
-                          context.push('/login?redirect=%2Fcheckout');
-                        }
-                      } : null,
+                      onPressed: (isShopOpen && !isSettingsLoading)
+                          ? () {
+                              Navigator.pop(context);
+                              final isLoggedIn =
+                                  Supabase
+                                      .instance
+                                      .client
+                                      .auth
+                                      .currentSession !=
+                                  null;
+                              if (isLoggedIn) {
+                                context.push('/checkout');
+                              } else {
+                                context.push('/login?redirect=%2Fcheckout');
+                              }
+                            }
+                          : null,
                     ),
                   ],
                 ),

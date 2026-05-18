@@ -147,7 +147,7 @@ class AuthService {
       final data = res.data as Map<String, dynamic>;
       final token = data['token'].toString();
       final email = data['email'] as String;
-      
+
       await _supabase.auth.verifyOTP(
         email: email,
         token: token,
@@ -239,7 +239,7 @@ class AuthService {
   static Future<void> signOutAndClear(WidgetRef ref) async {
     await _supabase.auth.signOut();
     ref.invalidate(profileProvider);
-    
+
     // Attempt to invalidate other providers if they are loaded.
     // Instead of importing all of them and causing circular dependencies,
     // we can just call them locally in the UI, or import them here.

@@ -39,36 +39,38 @@ class GlobalFooter extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsAsync = ref.watch(settingsProvider);
     final settings = settingsAsync.valueOrNull;
-    
+
     // We import locationProvider to get the address
     // Wait, locationProvider is not imported here. I will need to ensure it's imported.
-    
+
     final storeName = settings?.storeName ?? 'ORA';
-    final description = settings?.shortDescription ??
+    final description =
+        settings?.shortDescription ??
         'Your favorite food, delivered fast and fresh directly to your door.';
     final phone = settings?.phone;
     final email = settings?.email;
     final operatingDays = settings?.operatingDays ?? 'Monday - Sunday';
-    
+
     String timingString = '9:00 AM - 10:00 PM';
     if (settings?.openingTime != null && settings?.closingTime != null) {
       try {
         final openParts = settings!.openingTime!.split(':');
         final closeParts = settings.closingTime!.split(':');
-        
+
         final openHour = int.parse(openParts[0]);
         final openMin = int.parse(openParts[1]);
         final closeHour = int.parse(closeParts[0]);
         final closeMin = int.parse(closeParts[1]);
-        
+
         String formatTime(int h, int m) {
           final period = h >= 12 ? 'PM' : 'AM';
           final displayH = h == 0 ? 12 : (h > 12 ? h - 12 : h);
           final displayM = m.toString().padLeft(2, '0');
           return '$displayH:$displayM $period';
         }
-        
-        timingString = '${formatTime(openHour, openMin)} - ${formatTime(closeHour, closeMin)}';
+
+        timingString =
+            '${formatTime(openHour, openMin)} - ${formatTime(closeHour, closeMin)}';
       } catch (_) {}
     }
 
@@ -95,11 +97,24 @@ class GlobalFooter extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 2, child: _buildLogoColumn(storeName, description)),
+                    Expanded(
+                      flex: 2,
+                      child: _buildLogoColumn(storeName, description),
+                    ),
                     const SizedBox(width: 32),
-                    Expanded(flex: 3, child: _buildContactColumn(storeName, phone, email)),
+                    Expanded(
+                      flex: 3,
+                      child: _buildContactColumn(storeName, phone, email),
+                    ),
                     const SizedBox(width: 32),
-                    Expanded(flex: 3, child: _buildTimingsColumn(operatingDays, timingString, settings)),
+                    Expanded(
+                      flex: 3,
+                      child: _buildTimingsColumn(
+                        operatingDays,
+                        timingString,
+                        settings,
+                      ),
+                    ),
                   ],
                 ),
               const SizedBox(height: 48),
@@ -152,47 +167,72 @@ class GlobalFooter extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-            Text(
-              storeName,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        Text(
+          storeName,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (phone != null && phone.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                const Text(
+                  'Phone: ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(phone, style: const TextStyle(color: Colors.white70)),
+              ],
             ),
-            const SizedBox(height: 16),
-            if (phone != null && phone.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    const Text('Phone: ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    Text(phone, style: const TextStyle(color: Colors.white70)),
-                  ],
+          ),
+        if (email != null && email.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              children: [
+                const Text(
+                  'Email: ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-            if (email != null && email.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  children: [
-                    const Text('Email: ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    Text(email, style: const TextStyle(color: Colors.white70)),
-                  ],
-                ),
-              ),
-          ],
-        );
+                Text(email, style: const TextStyle(color: Colors.white70)),
+              ],
+            ),
+          ),
+      ],
+    );
   }
 
-  Widget _buildTimingsColumn(String operatingDays, String timingString, dynamic settings) {
-    final bool hasSocial = (settings?.facebookUrl?.isNotEmpty == true) ||
-                           (settings?.instagramUrl?.isNotEmpty == true) ||
-                           (settings?.tiktokUrl?.isNotEmpty == true) ||
-                           (settings?.youtubeUrl?.isNotEmpty == true);
+  Widget _buildTimingsColumn(
+    String operatingDays,
+    String timingString,
+    dynamic settings,
+  ) {
+    final bool hasSocial =
+        (settings?.facebookUrl?.isNotEmpty == true) ||
+        (settings?.instagramUrl?.isNotEmpty == true) ||
+        (settings?.tiktokUrl?.isNotEmpty == true) ||
+        (settings?.youtubeUrl?.isNotEmpty == true);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Our Timings',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(height: 16),
         Row(
@@ -206,15 +246,35 @@ class GlobalFooter extends ConsumerWidget {
           const SizedBox(height: 32),
           const Text(
             'Follow Us:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              _buildSocialIcon(Icons.facebook, settings?.facebookUrl, Colors.blue),
-              _buildSocialIcon(Icons.camera_alt, settings?.instagramUrl, Colors.pink),
-              _buildSocialIcon(Icons.music_note, settings?.tiktokUrl, Colors.white),
-              _buildSocialIcon(Icons.play_circle_fill, settings?.youtubeUrl, Colors.red),
+              _buildSocialIcon(
+                Icons.facebook,
+                settings?.facebookUrl,
+                Colors.blue,
+              ),
+              _buildSocialIcon(
+                Icons.camera_alt,
+                settings?.instagramUrl,
+                Colors.pink,
+              ),
+              _buildSocialIcon(
+                Icons.music_note,
+                settings?.tiktokUrl,
+                Colors.white,
+              ),
+              _buildSocialIcon(
+                Icons.play_circle_fill,
+                settings?.youtubeUrl,
+                Colors.red,
+              ),
             ],
           ),
         ],

@@ -17,8 +17,7 @@ class CompleteProfileScreen extends ConsumerStatefulWidget {
       _CompleteProfileScreenState();
 }
 
-class _CompleteProfileScreenState
-    extends ConsumerState<CompleteProfileScreen> {
+class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameC = TextEditingController();
   bool _loading = false;
@@ -33,9 +32,9 @@ class _CompleteProfileScreenState
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await ref.read(profileProvider.notifier).updateProfile(
-        fullName: _nameC.text.trim(),
-      );
+      await ref
+          .read(profileProvider.notifier)
+          .updateProfile(fullName: _nameC.text.trim());
       // Sync cart from guest session if any
       await ref.read(cartProvider.notifier).syncGuestCart();
       if (!mounted) return;
@@ -98,10 +97,8 @@ class _CompleteProfileScreenState
 
                       Text(
                         'Welcome to Ora!',
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 8),
                       Text(

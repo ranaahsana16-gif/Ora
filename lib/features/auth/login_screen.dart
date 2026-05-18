@@ -51,9 +51,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       begin: const Offset(0.2, 0),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutCubic));
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut),
-    );
+    _fadeAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut));
     _slideCtrl.forward();
   }
 
@@ -187,8 +188,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       final profile = ref.read(profileProvider).valueOrNull;
       if (!mounted) return;
 
-      final redirectTo =
-          GoRouterState.of(context).uri.queryParameters['redirect'];
+      final redirectTo = GoRouterState.of(
+        context,
+      ).uri.queryParameters['redirect'];
 
       // First-time user with no name set
       if (profile != null &&
@@ -311,9 +313,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           if (!_otpSent) ...[
                             Text(
                               'Welcome',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
+                              style: Theme.of(context).textTheme.headlineSmall
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 8),
@@ -356,9 +356,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             const SizedBox(height: 16),
                             Text(
                               'Check WhatsApp',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
+                              style: Theme.of(context).textTheme.headlineSmall
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 8),
@@ -372,7 +370,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 ),
                                 children: [
                                   const TextSpan(
-                                      text: 'We sent a 6-digit code to\n'),
+                                    text: 'We sent a 6-digit code to\n',
+                                  ),
                                   TextSpan(
                                     text: _phone,
                                     style: const TextStyle(
@@ -402,7 +401,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               icon: Icons.send_rounded,
                             ),
                           ]
-
                           // ── Step 2: OTP input ─────────────────────────
                           else ...[
                             _OtpInput(
@@ -457,11 +455,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             child: Text(
                               'Worker?',
                               style: TextStyle(
-                                color: OraTheme.textMuted.withValues(alpha: 0.6),
+                                color: OraTheme.textMuted.withValues(
+                                  alpha: 0.6,
+                                ),
                                 fontSize: 12,
                                 decoration: TextDecoration.underline,
-                                decorationColor:
-                                    OraTheme.textMuted.withValues(alpha: 0.4),
+                                decorationColor: OraTheme.textMuted.withValues(
+                                  alpha: 0.4,
+                                ),
                               ),
                             ),
                           ),
@@ -503,9 +504,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        canPop
-                            ? Icons.arrow_back_rounded
-                            : Icons.home_outlined,
+                        canPop ? Icons.arrow_back_rounded : Icons.home_outlined,
                         size: 20,
                         color: OraTheme.textPrimary,
                       ),

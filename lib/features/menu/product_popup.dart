@@ -7,11 +7,7 @@ class ProductPopup extends StatelessWidget {
   final Product product;
   final ScrollController? scrollController;
 
-  const ProductPopup({
-    super.key,
-    required this.product,
-    this.scrollController,
-  });
+  const ProductPopup({super.key, required this.product, this.scrollController});
 
   @override
   Widget build(BuildContext context) {

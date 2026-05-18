@@ -9,6 +9,7 @@ import 'package:ora/features/menu/menu_provider.dart';
 import 'package:ora/features/orders/orders_screen.dart';
 import 'package:ora/features/profile/address_provider.dart';
 import 'package:ora/features/wishlist/wishlist_provider.dart';
+
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -243,8 +244,7 @@ class _NotificationsTile extends ConsumerStatefulWidget {
   const _NotificationsTile({required this.onTap});
 
   @override
-  ConsumerState<_NotificationsTile> createState() =>
-      _NotificationsTileState();
+  ConsumerState<_NotificationsTile> createState() => _NotificationsTileState();
 }
 
 class _NotificationsTileState extends ConsumerState<_NotificationsTile> {
@@ -271,8 +271,7 @@ class _NotificationsTileState extends ConsumerState<_NotificationsTile> {
                   ? Colors.black.withValues(alpha: 0.03)
                   : OraTheme.cardLight,
               border: Border.all(
-                color: Colors.black
-                    .withValues(alpha: _hovered ? 0.08 : 0.04),
+                color: Colors.black.withValues(alpha: _hovered ? 0.08 : 0.04),
               ),
             ),
             child: Row(
@@ -321,10 +320,7 @@ class _NotificationsTileState extends ConsumerState<_NotificationsTile> {
                 const SizedBox(width: 14),
                 const Text(
                   'Notifications',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                 ),
                 const Spacer(),
                 Icon(

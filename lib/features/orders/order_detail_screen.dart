@@ -61,8 +61,6 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,18 +102,24 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                         decoration: BoxDecoration(
                           color: OraTheme.cardLight,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                          border: Border.all(
+                            color: Colors.black.withValues(alpha: 0.05),
+                          ),
                         ),
                         child: Row(
                           children: [
                             CircleAvatar(
                               radius: 24,
-                              backgroundColor: OraTheme.primaryOrange.withValues(alpha: 0.1),
+                              backgroundColor: OraTheme.primaryOrange
+                                  .withValues(alpha: 0.1),
                               backgroundImage: _order!.rider!.avatarUrl != null
                                   ? NetworkImage(_order!.rider!.avatarUrl!)
                                   : null,
                               child: _order!.rider!.avatarUrl == null
-                                  ? const Icon(Icons.person, color: OraTheme.primaryOrange)
+                                  ? const Icon(
+                                      Icons.person,
+                                      color: OraTheme.primaryOrange,
+                                    )
                                   : null,
                             ),
                             const SizedBox(width: 16),
@@ -125,13 +129,19 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                                 children: [
                                   Text(
                                     _order!.rider!.fullName ?? 'Your Rider',
-                                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                   if (_order!.rider!.phone != null) ...[
                                     const SizedBox(height: 4),
                                     Text(
                                       _order!.rider!.phone!,
-                                      style: TextStyle(color: OraTheme.textSecondary, fontSize: 14),
+                                      style: TextStyle(
+                                        color: OraTheme.textSecondary,
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ],
                                 ],
@@ -143,7 +153,11 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                                 color: Colors.green.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.call, color: Colors.green, size: 20),
+                              child: const Icon(
+                                Icons.call,
+                                color: Colors.green,
+                                size: 20,
+                              ),
                             ),
                           ],
                         ),

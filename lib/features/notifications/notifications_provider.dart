@@ -7,19 +7,16 @@ final _supabase = Supabase.instance.client;
 /// Streams the current user's notifications in real-time, newest first.
 final notificationsStreamProvider =
     StreamProvider.autoDispose<List<AppNotification>>((ref) {
-  final user = _supabase.auth.currentUser;
-  if (user == null) return const Stream.empty();
+      final user = _supabase.auth.currentUser;
+      if (user == null) return const Stream.empty();
 
-  return _supabase
-      .from('notifications')
-      .stream(primaryKey: ['id'])
-      .eq('user_id', user.id)
-      .order('created_at', ascending: false)
-      .map(
-        (rows) =>
-            rows.map((r) => AppNotification.fromJson(r)).toList(),
-      );
-});
+      return _supabase
+          .from('notifications')
+          .stream(primaryKey: ['id'])
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false)
+          .map((rows) => rows.map((r) => AppNotification.fromJson(r)).toList());
+    });
 
 /// Derived unread count.
 final unreadNotificationCountProvider = Provider.autoDispose<int>((ref) {
